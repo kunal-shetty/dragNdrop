@@ -77,6 +77,8 @@ export function ResizableBlock({
   zoom = 1,
   zIndex = 1,
   physicsEnabled = false,
+  snappingEnabled = false,
+  onSnapGuidesChange = () => {},
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [localPosition, setLocalPosition] = useState(component.position)
@@ -138,12 +140,12 @@ export function ResizableBlock({
       e.stopPropagation()
 
       setIsDragging(true)
-      startPosRef.current = { ...localPosition }
+      startPosRef.current = { x: component.position.x, y: component.position.y }
       startMouseRef.current = { x: e.clientX, y: e.clientY }
       lastMouseRef.current = { x: e.clientX, y: e.clientY, time: Date.now() }
       onSelect(component.id)
     },
-    [component.id, component.locked?.position, isEditing, localPosition, onSelect],
+    [component.id, component.locked?.position, component.position, isEditing, onSelect],
   )
 
   const handleMouseMove = useCallback(
@@ -168,6 +170,10 @@ export function ResizableBlock({
         }
 
         setLocalPosition({ x: newX, y: newY })
+
+        if (snappingEnabled && onSnapGuidesChange) {
+          onSnapGuidesChange([])
+        }
       }
 
       if (isResizing && resizeHandle && !component.locked?.size) {
@@ -206,7 +212,7 @@ export function ResizableBlock({
         setLocalPosition({ x: newX, y: newY })
       }
     },
-    [isDragging, isResizing, resizeHandle, component.locked, zoom, physicsEnabled],
+    [isDragging, isResizing, resizeHandle, component.locked, zoom, physicsEnabled, snappingEnabled, onSnapGuidesChange],
   )
 
   const handleMouseUp = useCallback(() => {

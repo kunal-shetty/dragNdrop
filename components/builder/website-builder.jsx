@@ -16,6 +16,8 @@ import { PremiumModal, usePremiumModal } from "./premium-modal"
 import { exportToHTML, downloadHTML } from "@/lib/export-html"
 import { Save, Check } from "lucide-react"
 import { generateId } from "@/lib/generate-id"
+import { AIChatbot } from "./ai-chatbot"
+import { OnboardingTour } from "./onboarding-tour"
 
 export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [docId] = useState(() => documentId || generateId())
@@ -290,6 +292,8 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
 
   return (
     <MobileWarning>
+      <OnboardingTour />
+
       <div
         className="flex h-screen w-full overflow-hidden bg-background"
         onKeyDown={handleKeyDown}
@@ -455,6 +459,8 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
 
         {/* Premium Modal */}
         <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} />
+
+        <AIChatbot />
       </div>
     </MobileWarning>
   )
