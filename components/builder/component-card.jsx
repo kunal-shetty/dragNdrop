@@ -17,6 +17,11 @@ import {
   PanelBottom,
   LayoutGrid,
   Trash2,
+  Navigation,
+  Layout,
+  MessageSquare,
+  BarChart3,
+  Layers,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -36,6 +41,12 @@ const iconMap = {
   DollarSign,
   PanelBottom,
   LayoutGrid,
+  Navigation,
+  Layout,
+  MessageSquare,
+  BarChart3,
+  Layers,
+  // Component type mappings
   text: Type,
   heading: Heading,
   paragraph: AlignLeft,
@@ -50,6 +61,12 @@ const iconMap = {
   icon: Star,
   pricing: DollarSign,
   footer: PanelBottom,
+  navbar: Navigation,
+  section: Layout,
+  hero: Star,
+  testimonial: MessageSquare,
+  stats: BarChart3,
+  group: Layers,
 }
 
 export function ComponentCard({ component, isCustom, customId, onDelete }) {
@@ -90,7 +107,6 @@ export function ComponentCard({ component, isCustom, customId, onDelete }) {
         <Icon className={`w-3.5 h-3.5 ${isCustom ? "text-neon-magenta" : "text-neon-cyan"}`} />
       </div>
       <span className="text-xs font-medium text-foreground flex-1 truncate">{component.label}</span>
-      {/* Delete button for custom components */}
       {isCustom && onDelete && (
         <Button
           variant="ghost"

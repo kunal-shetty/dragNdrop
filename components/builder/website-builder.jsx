@@ -11,12 +11,15 @@ import { LayerPanel } from "./layer-panel"
 import { CollaborationBar } from "./collaboration-bar"
 import { RemoteCursor, PingEffect } from "./remote-cursor"
 import { HistoryPanel } from "./history-panel"
+import { MobileWarning } from "./mobile-warning"
+import { PremiumModal, usePremiumModal } from "./premium-modal"
 import { exportToHTML, downloadHTML } from "@/lib/export-html"
 import { Save, Check } from "lucide-react"
 import { generateId } from "@/lib/generate-id"
+import { AIChatbot } from "./ai-chatbot"
+import { OnboardingTour } from "./onboarding-tour"
 
 export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
-  // Generate document ID if not provided
   const [docId] = useState(() => documentId || generateId())
 
   const {
@@ -62,6 +65,10 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
     ungroupComponents,
     selectedIds,
     setSelectedIds,
+    bringToFront,
+    sendToBack,
+    bringForward,
+    sendBackward,
   } = useEditorState()
 
   const {
@@ -83,13 +90,33 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
   const [showLayerPanel, setShowLayerPanel] = useState(true)
   const [showHistoryPanel, setShowHistoryPanel] = useState(false)
-  const [responsiveMode, setResponsiveMode] = useState("desktop") // desktop, tablet, mobile
+  const [responsiveMode, setResponsiveMode] = useState("desktop")
+  const [physicsEnabled, setPhysicsEnabled] = useState(false)
+
+  const {
+    isOpen: isPremiumOpen,
+    setIsOpen: setIsPremiumOpen,
+    trackUsage,
+    canExport,
+    usageCount,
+    limit,
+  } = usePremiumModal()
+
+  useEffect(() => {
+    const savedState = localStorage.getItem("inspector-collapsed")
+    if (savedState !== null) {
+      setInspectorCollapsed(JSON.parse(savedState))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("inspector-collapsed", JSON.stringify(inspectorCollapsed))
+  }, [inspectorCollapsed])
 
   useEffect(() => {
     if (hasRemoteUpdates) {
       const update = consumeRemoteUpdate()
       if (update) {
-        // Apply remote update without adding to history
         if (update.type === "move") {
           moveComponent(update.id, update.position)
         } else if (update.type === "resize") {
@@ -116,7 +143,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5, // Reduced for more responsive feel
       },
     }),
   )
@@ -147,9 +174,12 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   )
 
   const handleExport = useCallback(() => {
+    if (!trackUsage()) {
+      return // Premium modal will be shown
+    }
     const html = exportToHTML(components)
     downloadHTML(html)
-  }, [components])
+  }, [components, trackUsage])
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -187,6 +217,23 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
         ungroupComponents(selectedId)
       }
 
+      if ((e.ctrlKey || e.metaKey) && e.key === "]" && selectedId) {
+        e.preventDefault()
+        bringForward(selectedId)
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "[" && selectedId) {
+        e.preventDefault()
+        sendBackward(selectedId)
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "]" && selectedId) {
+        e.preventDefault()
+        bringToFront(selectedId)
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "[" && selectedId) {
+        e.preventDefault()
+        sendToBack(selectedId)
+      }
+
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
         const activeElement = document.activeElement
         if (activeElement?.tagName !== "INPUT" && activeElement?.tagName !== "TEXTAREA") {
@@ -207,6 +254,10 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
       deleteComponent,
       groupComponents,
       ungroupComponents,
+      bringToFront,
+      sendToBack,
+      bringForward,
+      sendBackward,
     ],
   )
 
@@ -240,140 +291,177 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   }
 
   return (
-    <div
-      className="flex h-screen w-full overflow-hidden bg-background"
-      onKeyDown={handleKeyDown}
-      onMouseMove={handleMouseMove}
-      onDoubleClick={handleDoubleClick}
-      tabIndex={0}
-    >
-      {collaborationEnabled && users.length > 0 && (
-        <CollaborationBar users={users} documentId={docId} currentUserId={userId} />
-      )}
+    <MobileWarning>
+      <OnboardingTour />
 
-      {collaborationEnabled &&
-        cursors.map(([cursorUserId, cursor]) => (
-          <RemoteCursor key={cursorUserId} x={cursor.x} y={cursor.y} color={cursor.color} name={cursor.name} />
+      <div
+        className="flex h-screen w-full overflow-hidden bg-background"
+        onKeyDown={handleKeyDown}
+        onMouseMove={handleMouseMove}
+        onDoubleClick={handleDoubleClick}
+        tabIndex={0}
+      >
+        {collaborationEnabled && users.length > 0 && (
+          <CollaborationBar users={users} documentId={docId} currentUserId={userId} />
+        )}
+
+        {collaborationEnabled &&
+          cursors.map(([cursorUserId, cursor]) => (
+            <RemoteCursor key={cursorUserId} x={cursor.x} y={cursor.y} color={cursor.color} name={cursor.name} />
+          ))}
+
+        {pings.map((ping) => (
+          <PingEffect key={ping.id} x={ping.x} y={ping.y} color={ping.color} />
         ))}
 
-      {pings.map((ping) => (
-        <PingEffect key={ping.id} x={ping.x} y={ping.y} color={ping.color} />
-      ))}
-
-      <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-        <Sidebar
-          onUndo={undo}
-          onRedo={redo}
-          onClear={clearCanvas}
-          onExport={handleExport}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          snappingEnabled={snappingEnabled}
-          onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
-          customComponents={customComponents}
-          onDeleteCustomComponent={deleteCustomComponent}
-          showLayerPanel={showLayerPanel}
-          onToggleLayerPanel={() => setShowLayerPanel(!showLayerPanel)}
-          showHistoryPanel={showHistoryPanel}
-          onToggleHistoryPanel={() => setShowHistoryPanel(!showHistoryPanel)}
-          responsiveMode={responsiveMode}
-          onResponsiveModeChange={setResponsiveMode}
-        />
-
-        {showLayerPanel && (
-          <LayerPanel
-            components={components}
-            selectedId={selectedId}
-            selectedIds={selectedIds}
-            onSelect={setSelectedId}
-            onMultiSelect={setSelectedIds}
-            onRename={renameLayer}
-            onReorder={reorderLayers}
-            onToggleLock={toggleLock}
-            onDelete={deleteComponent}
-            onGroup={groupComponents}
-            onUngroup={ungroupComponents}
-            collaboratingUsers={users}
-          />
-        )}
-
-        <div
-          className="flex-1 flex flex-col"
-          style={{
-            maxWidth: responsiveMode !== "desktop" ? getCanvasWidth() : undefined,
-            margin: responsiveMode !== "desktop" ? "0 auto" : undefined,
-          }}
-        >
-          <Canvas
-            components={components}
-            selectedId={selectedId}
-            selectedIds={selectedIds}
-            zoom={zoom}
-            pan={pan}
-            snappingEnabled={snappingEnabled}
-            snapGuides={snapGuides}
-            onSelect={setSelectedId}
-            onMultiSelect={setSelectedIds}
-            onMove={(id, pos) => {
-              moveComponent(id, pos)
-              if (collaborationEnabled) {
-                sendComponentUpdate({ type: "move", id, position: pos })
-              }
-            }}
-            onResize={(id, size) => {
-              resizeComponent(id, size)
-              if (collaborationEnabled) {
-                sendComponentUpdate({ type: "resize", id, size })
-              }
-            }}
-            onContentChange={(id, props) => {
-              updateComponentProps(id, props)
-              if (collaborationEnabled) {
-                sendComponentUpdate({ type: "props", id, props })
-              }
-            }}
-            onZoomChange={setZoom}
-            onPanChange={setPan}
-            onSnapGuidesChange={setSnapGuides}
-            collaboratingUsers={users}
-            currentUserId={userId}
-            responsiveMode={responsiveMode}
-          />
+        {/* Auto-save indicator */}
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
+          {saveStatus === "saving" ? (
+            <>
+              <Save className="w-3 h-3 text-neon-cyan animate-pulse" />
+              <span className="text-muted-foreground">Saving...</span>
+            </>
+          ) : (
+            <>
+              <Check className="w-3 h-3 text-neon-cyan" />
+              <span className="text-muted-foreground">Saved</span>
+            </>
+          )}
+          <span className="ml-2 text-muted-foreground border-l border-border pl-2">
+            {usageCount}/{limit} exports
+          </span>
         </div>
 
-        {showHistoryPanel && (
-          <HistoryPanel
-            history={history}
-            historyIndex={historyIndex}
-            onGoToIndex={goToHistoryIndex}
-            onClose={() => setShowHistoryPanel(false)}
+        <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
+          <Sidebar
+            onUndo={undo}
+            onRedo={redo}
+            onClear={clearCanvas}
+            onExport={handleExport}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            canExport={canExport}
+            snappingEnabled={snappingEnabled}
+            onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
+            physicsEnabled={physicsEnabled}
+            onTogglePhysics={() => setPhysicsEnabled(!physicsEnabled)}
+            customComponents={customComponents}
+            onDeleteCustomComponent={deleteCustomComponent}
+            showLayerPanel={showLayerPanel}
+            onToggleLayerPanel={() => setShowLayerPanel(!showLayerPanel)}
+            showHistoryPanel={showHistoryPanel}
+            onToggleHistoryPanel={() => setShowHistoryPanel(!showHistoryPanel)}
+            responsiveMode={responsiveMode}
+            onResponsiveModeChange={setResponsiveMode}
           />
-        )}
 
-        <InspectorPanel
-          component={selectedComponent}
-          collapsed={inspectorCollapsed}
-          onToggleCollapse={() => setInspectorCollapsed(!inspectorCollapsed)}
-          onUpdateProps={(props) => {
-            if (selectedId) {
-              updateComponentProps(selectedId, props)
-              if (collaborationEnabled) {
-                sendComponentUpdate({ type: "props", id: selectedId, props })
+          {showLayerPanel && (
+            <LayerPanel
+              components={components}
+              selectedId={selectedId}
+              selectedIds={selectedIds}
+              onSelect={setSelectedId}
+              onMultiSelect={setSelectedIds}
+              onRename={renameLayer}
+              onReorder={reorderLayers}
+              onToggleLock={toggleLock}
+              onDelete={deleteComponent}
+              onGroup={groupComponents}
+              onUngroup={ungroupComponents}
+              onBringForward={bringForward}
+              onSendBackward={sendBackward}
+              onBringToFront={bringToFront}
+              onSendToBack={sendToBack}
+              collaboratingUsers={users}
+            />
+          )}
+
+          <div
+            className="flex-1 flex flex-col"
+            style={{
+              maxWidth: responsiveMode !== "desktop" ? getCanvasWidth() : undefined,
+              margin: responsiveMode !== "desktop" ? "0 auto" : undefined,
+            }}
+          >
+            <Canvas
+              components={components}
+              selectedId={selectedId}
+              selectedIds={selectedIds}
+              zoom={zoom}
+              pan={pan}
+              snappingEnabled={snappingEnabled}
+              snapGuides={snapGuides}
+              physicsEnabled={physicsEnabled}
+              onSelect={setSelectedId}
+              onMultiSelect={setSelectedIds}
+              onMove={(id, pos) => {
+                moveComponent(id, pos)
+                if (collaborationEnabled) {
+                  sendComponentUpdate({ type: "move", id, position: pos })
+                }
+              }}
+              onResize={(id, size) => {
+                resizeComponent(id, size)
+                if (collaborationEnabled) {
+                  sendComponentUpdate({ type: "resize", id, size })
+                }
+              }}
+              onContentChange={(id, props) => {
+                updateComponentProps(id, props)
+                if (collaborationEnabled) {
+                  sendComponentUpdate({ type: "props", id, props })
+                }
+              }}
+              onZoomChange={setZoom}
+              onPanChange={setPan}
+              onSnapGuidesChange={setSnapGuides}
+              collaboratingUsers={users}
+              currentUserId={userId}
+              responsiveMode={responsiveMode}
+            />
+          </div>
+
+          {showHistoryPanel && (
+            <HistoryPanel
+              history={history}
+              historyIndex={historyIndex}
+              onGoToIndex={goToHistoryIndex}
+              onClose={() => setShowHistoryPanel(false)}
+            />
+          )}
+
+          <InspectorPanel
+            component={selectedComponent}
+            collapsed={inspectorCollapsed}
+            onToggleCollapse={() => setInspectorCollapsed(!inspectorCollapsed)}
+            onUpdateProps={(props) => {
+              if (selectedId) {
+                updateComponentProps(selectedId, props)
+                if (collaborationEnabled) {
+                  sendComponentUpdate({ type: "props", id: selectedId, props })
+                }
               }
-            }
-          }}
-          onUpdateComponent={(updates) => selectedId && updateComponent(selectedId, updates)}
-          onUpdateFromJSON={(json) => selectedId && updateComponentFromJSON(selectedId, json)}
-          onToggleLock={(lockType) => selectedId && toggleLock(selectedId, lockType)}
-          onDuplicate={duplicateComponent}
-          onDelete={deleteComponent}
-          onSaveAsCustom={(name) => selectedComponent && saveCustomComponent(selectedComponent, name)}
-          snappingEnabled={snappingEnabled}
-          onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
-          onTypingStart={collaborationEnabled ? startTyping : undefined}
-          onTypingEnd={collaborationEnabled ? endTyping : undefined}
-        />
-      </DndContext>
-    </div>
+            }}
+            onUpdateComponent={(updates) => selectedId && updateComponent(selectedId, updates)}
+            onUpdateFromJSON={(json) => selectedId && updateComponentFromJSON(selectedId, json)}
+            onToggleLock={(lockType) => selectedId && toggleLock(selectedId, lockType)}
+            onDuplicate={duplicateComponent}
+            onDelete={deleteComponent}
+            onSaveAsCustom={(name) => selectedComponent && saveCustomComponent(selectedComponent, name)}
+            onBringToFront={() => selectedId && bringToFront(selectedId)}
+            onSendToBack={() => selectedId && sendToBack(selectedId)}
+            snappingEnabled={snappingEnabled}
+            onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
+            onTypingStart={collaborationEnabled ? startTyping : undefined}
+            onTypingEnd={collaborationEnabled ? endTyping : undefined}
+          />
+        </DndContext>
+
+        {/* Premium Modal */}
+        <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} />
+
+        <AIChatbot />
+      </div>
+    </MobileWarning>
   )
 }
