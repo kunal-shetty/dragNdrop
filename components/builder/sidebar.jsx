@@ -18,6 +18,8 @@ import {
   ImageOff as MagnetOff,
   PanelLeft,
   Star,
+  Zap,
+  History,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -37,14 +39,19 @@ export function Sidebar({
   onExport,
   canUndo,
   canRedo,
+  canExport = true,
   snappingEnabled,
   onToggleSnapping,
+  physicsEnabled,
+  onTogglePhysics,
   customComponents,
   onDeleteCustomComponent,
   showLayerPanel,
   onToggleLayerPanel,
+  showHistoryPanel,
+  onToggleHistoryPanel,
 }) {
-  const [openCategories, setOpenCategories] = useState(["basic", "layout", "custom"])
+  const [openCategories, setOpenCategories] = useState(["basic", "sections", "custom"])
 
   const toggleCategory = (categoryId) => {
     setOpenCategories((prev) =>
@@ -73,7 +80,7 @@ export function Sidebar({
 
       {/* Quick Actions */}
       <div className="p-3 border-b border-sidebar-border">
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           <Button
             variant="ghost"
             size="sm"
@@ -91,6 +98,24 @@ export function Sidebar({
             title="Toggle layer panel"
           >
             <PanelLeft className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleHistoryPanel}
+            className={`flex-1 h-8 ${showHistoryPanel ? "text-neon-cyan bg-neon-cyan/10" : ""}`}
+            title="Toggle history panel"
+          >
+            <History className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onTogglePhysics}
+            className={`flex-1 h-8 ${physicsEnabled ? "text-neon-magenta bg-neon-magenta/10" : ""}`}
+            title={physicsEnabled ? "Disable physics" : "Enable physics (experimental)"}
+          >
+            <Zap className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -144,6 +169,7 @@ export function Sidebar({
                 <div className="flex items-center gap-2">
                   <CategoryIcon className="w-4 h-4 text-neon-cyan" />
                   <span className="text-sm font-medium text-foreground">{category.label}</span>
+                  <span className="text-xs text-muted-foreground">({category.components.length})</span>
                 </div>
                 <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${openCategories.includes(category.id) ? "rotate-180" : ""}`}
@@ -189,7 +215,12 @@ export function Sidebar({
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
-        <Button size="sm" onClick={onExport} className="w-full h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90">
+        <Button
+          size="sm"
+          onClick={onExport}
+          disabled={!canExport}
+          className="w-full h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90 disabled:opacity-50"
+        >
           <Download className="w-4 h-4 mr-2" />
           Export HTML
         </Button>

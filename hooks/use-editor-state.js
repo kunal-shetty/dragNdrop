@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { generateId } from "@/lib/generate-id"
-import { componentDefaults } from "@/lib/default-components"
+import { componentDefaults, componentSizes } from "@/lib/default-components"
 
 const STORAGE_KEY = "website-builder-state"
 const CUSTOM_COMPONENTS_KEY = "custom-components"
@@ -10,7 +10,7 @@ const CUSTOM_COMPONENTS_KEY = "custom-components"
 export function useEditorState() {
   const [components, setComponents] = useState([])
   const [selectedId, setSelectedId] = useState(null)
-  const [selectedIds, setSelectedIds] = useState([]) // Multi-select support
+  const [selectedIds, setSelectedIds] = useState([])
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [history, setHistory] = useState([])
@@ -20,7 +20,6 @@ export function useEditorState() {
   const [customComponents, setCustomComponents] = useState([])
   const [snapGuides, setSnapGuides] = useState({ horizontal: [], vertical: [] })
 
-  // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -32,7 +31,6 @@ export function useEditorState() {
         console.error("Failed to load saved state:", e)
       }
     }
-    // Load custom components
     const savedCustom = localStorage.getItem(CUSTOM_COMPONENTS_KEY)
     if (savedCustom) {
       try {
@@ -43,13 +41,11 @@ export function useEditorState() {
     }
   }, [])
 
-  // Save to localStorage on changes
   useEffect(() => {
     const state = { components, snappingEnabled }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [components, snappingEnabled])
 
-  // Save custom components
   useEffect(() => {
     localStorage.setItem(CUSTOM_COMPONENTS_KEY, JSON.stringify(customComponents))
   }, [customComponents])
@@ -74,28 +70,45 @@ export function useEditorState() {
     [historyIndex],
   )
 
+  const getNextZIndex = useCallback(() => {
+    if (components.length === 0) return 1
+    const maxZ = Math.max(...components.map((c) => c.zIndex || 0))
+    return maxZ + 1
+  }, [components])
+
   const addComponent = useCallback(
     (type, position = { x: 100, y: 100 }, customProps = null) => {
       const defaults = customProps || componentDefaults[type] || {}
+      const defaultSize = componentSizes[type] || {
+        width:
+          type === "container"
+            ? 400
+            : type === "footer" || type === "navbar" || type === "section" || type === "hero"
+              ? 600
+              : 200,
+        height:
+          type === "container"
+            ? 200
+            : type === "footer"
+              ? 150
+              : type === "navbar"
+                ? 64
+                : type === "section" || type === "hero"
+                  ? 300
+                  : 100,
+      }
       const newComponent = {
         id: generateId(),
         type,
         props: { ...defaults },
         position,
-        size: {
-          width: type === "container" ? 400 : type === "footer" ? 600 : type === "pricing" ? 280 : 200,
-          height: type === "container" ? 200 : type === "footer" ? 150 : type === "pricing" ? 400 : 100,
-        },
+        size: defaultSize,
+        zIndex: getNextZIndex(), // Assign z-index
         transform: { rotate: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 },
         locked: { position: false, size: false, editing: false },
         layerName: `${type}-${Date.now().toString(36)}`,
         children: [],
-        states: {
-          default: {},
-          hover: {},
-          active: {},
-          disabled: {},
-        },
+        states: { default: {}, hover: {}, active: {}, disabled: {} },
         currentState: "default",
       }
       setComponents((prev) => {
@@ -107,7 +120,7 @@ export function useEditorState() {
       setSelectedIds([newComponent.id])
       return newComponent.id
     },
-    [saveToHistory],
+    [saveToHistory, getNextZIndex],
   )
 
   const saveCustomComponent = useCallback((component, name) => {
@@ -135,6 +148,7 @@ export function useEditorState() {
         props: { ...customComp.defaultProps },
         position,
         size: { ...customComp.defaultSize },
+        zIndex: getNextZIndex(),
         transform: { rotate: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 },
         locked: { position: false, size: false, editing: false },
         layerName: customComp.name,
@@ -151,7 +165,7 @@ export function useEditorState() {
       setSelectedIds([newComponent.id])
       return newComponent.id
     },
-    [saveToHistory],
+    [saveToHistory, getNextZIndex],
   )
 
   const updateComponent = useCallback(
@@ -220,7 +234,76 @@ export function useEditorState() {
         const next = [...prev]
         const [removed] = next.splice(fromIndex, 1)
         next.splice(toIndex, 0, removed)
-        saveToHistory(next, "update", "Reordered layers")
+        const updated = next.map((comp, idx) => ({ ...comp, zIndex: idx + 1 }))
+        saveToHistory(updated, "update", "Reordered layers")
+        return updated
+      })
+    },
+    [saveToHistory],
+  )
+
+  const bringToFront = useCallback(
+    (id) => {
+      setComponents((prev) => {
+        const maxZ = Math.max(...prev.map((c) => c.zIndex || 0))
+        const next = prev.map((comp) => (comp.id === id ? { ...comp, zIndex: maxZ + 1 } : comp))
+        saveToHistory(next, "update", "Brought to front")
+        return next
+      })
+    },
+    [saveToHistory],
+  )
+
+  const sendToBack = useCallback(
+    (id) => {
+      setComponents((prev) => {
+        const minZ = Math.min(...prev.map((c) => c.zIndex || 0))
+        const next = prev.map((comp) => (comp.id === id ? { ...comp, zIndex: minZ - 1 } : comp))
+        saveToHistory(next, "update", "Sent to back")
+        return next
+      })
+    },
+    [saveToHistory],
+  )
+
+  const bringForward = useCallback(
+    (id) => {
+      setComponents((prev) => {
+        const comp = prev.find((c) => c.id === id)
+        if (!comp) return prev
+        const currentZ = comp.zIndex || 0
+        // Find next higher z-index
+        const higher = prev.filter((c) => (c.zIndex || 0) > currentZ).sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
+        if (higher.length === 0) return prev
+        const nextZ = higher[0].zIndex || currentZ + 1
+        const next = prev.map((c) => {
+          if (c.id === id) return { ...c, zIndex: nextZ }
+          if (c.id === higher[0].id) return { ...c, zIndex: currentZ }
+          return c
+        })
+        saveToHistory(next, "update", "Brought forward")
+        return next
+      })
+    },
+    [saveToHistory],
+  )
+
+  const sendBackward = useCallback(
+    (id) => {
+      setComponents((prev) => {
+        const comp = prev.find((c) => c.id === id)
+        if (!comp) return prev
+        const currentZ = comp.zIndex || 0
+        // Find next lower z-index
+        const lower = prev.filter((c) => (c.zIndex || 0) < currentZ).sort((a, b) => (b.zIndex || 0) - (a.zIndex || 0))
+        if (lower.length === 0) return prev
+        const prevZ = lower[0].zIndex || currentZ - 1
+        const next = prev.map((c) => {
+          if (c.id === id) return { ...c, zIndex: prevZ }
+          if (c.id === lower[0].id) return { ...c, zIndex: currentZ }
+          return c
+        })
+        saveToHistory(next, "update", "Sent backward")
         return next
       })
     },
@@ -249,10 +332,8 @@ export function useEditorState() {
         ...original,
         id: generateId(),
         props: { ...original.props },
-        position: {
-          x: original.position.x + 20,
-          y: original.position.y + 20,
-        },
+        position: { x: original.position.x + 20, y: original.position.y + 20 },
+        zIndex: getNextZIndex(),
         transform: { ...original.transform },
         locked: { position: false, size: false, editing: false },
         layerName: `${original.layerName}-copy`,
@@ -266,7 +347,7 @@ export function useEditorState() {
       setSelectedId(duplicate.id)
       setSelectedIds([duplicate.id])
     },
-    [components, saveToHistory],
+    [components, saveToHistory, getNextZIndex],
   )
 
   const copyComponent = useCallback(
@@ -291,10 +372,8 @@ export function useEditorState() {
       ...clipboard,
       id: generateId(),
       props: { ...clipboard.props },
-      position: {
-        x: clipboard.position.x + 40,
-        y: clipboard.position.y + 40,
-      },
+      position: { x: clipboard.position.x + 40, y: clipboard.position.y + 40 },
+      zIndex: getNextZIndex(),
       transform: { ...clipboard.transform },
       locked: { position: false, size: false, editing: false },
       states: JSON.parse(JSON.stringify(clipboard.states || {})),
@@ -306,7 +385,7 @@ export function useEditorState() {
     })
     setSelectedId(pasted.id)
     setSelectedIds([pasted.id])
-  }, [clipboard, saveToHistory])
+  }, [clipboard, saveToHistory, getNextZIndex])
 
   const moveComponent = useCallback((id, position) => {
     setComponents((prev) => prev.map((comp) => (comp.id === id ? { ...comp, position } : comp)))
@@ -323,7 +402,6 @@ export function useEditorState() {
       const componentsToGroup = components.filter((c) => ids.includes(c.id))
       if (componentsToGroup.length < 2) return
 
-      // Calculate bounding box
       const minX = Math.min(...componentsToGroup.map((c) => c.position.x))
       const minY = Math.min(...componentsToGroup.map((c) => c.position.y))
       const maxX = Math.max(...componentsToGroup.map((c) => c.position.x + c.size.width))
@@ -335,15 +413,13 @@ export function useEditorState() {
         props: {},
         position: { x: minX, y: minY },
         size: { width: maxX - minX, height: maxY - minY },
+        zIndex: getNextZIndex(),
         transform: { rotate: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 },
         locked: { position: false, size: false, editing: false },
         layerName: `Group-${Date.now().toString(36)}`,
         children: componentsToGroup.map((c) => ({
           ...c,
-          position: {
-            x: c.position.x - minX,
-            y: c.position.y - minY,
-          },
+          position: { x: c.position.x - minX, y: c.position.y - minY },
         })),
         states: { default: {}, hover: {}, active: {}, disabled: {} },
         currentState: "default",
@@ -359,7 +435,7 @@ export function useEditorState() {
       setSelectedId(groupComponent.id)
       setSelectedIds([groupComponent.id])
     },
-    [components, saveToHistory],
+    [components, saveToHistory, getNextZIndex],
   )
 
   const ungroupComponents = useCallback(
@@ -367,9 +443,10 @@ export function useEditorState() {
       const group = components.find((c) => c.id === groupId && c.type === "group")
       if (!group || !group.children?.length) return
 
-      const ungroupedComponents = group.children.map((child) => ({
+      const ungroupedComponents = group.children.map((child, idx) => ({
         ...child,
         id: generateId(),
+        zIndex: (group.zIndex || 0) + idx,
         position: {
           x: child.position.x + group.position.x,
           y: child.position.y + group.position.y,
@@ -461,6 +538,10 @@ export function useEditorState() {
     resizeComponent,
     groupComponents,
     ungroupComponents,
+    bringToFront,
+    sendToBack,
+    bringForward,
+    sendBackward,
     undo,
     redo,
     goToHistoryIndex,

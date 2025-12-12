@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import {
   Zap,
   Star,
@@ -28,6 +28,10 @@ import {
   Home,
   Bell,
   Lock,
+  Twitter,
+  Github,
+  Linkedin,
+  Instagram,
 } from "lucide-react"
 
 const resizeHandles = ["n", "s", "e", "w", "ne", "nw", "se", "sw"]
@@ -57,81 +61,155 @@ const iconComponents = {
   Search,
   Home,
   Bell,
+  Twitter,
+  Github,
+  Linkedin,
+  Instagram,
 }
 
-export function ResizableBlock({ component, isSelected, onSelect, onMove, onResize, onContentChange, zoom = 1 }) {
+export function ResizableBlock({
+  component,
+  isSelected,
+  onSelect,
+  onMove,
+  onResize,
+  onContentChange,
+  zoom = 1,
+  zIndex = 1,
+  physicsEnabled = false,
+}) {
   const [isEditing, setIsEditing] = useState(false)
   const [localPosition, setLocalPosition] = useState(component.position)
   const [localSize, setLocalSize] = useState(component.size)
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [resizeHandle, setResizeHandle] = useState(null)
+  const [velocity, setVelocity] = useState({ x: 0, y: 0 })
   const blockRef = useRef(null)
   const startPosRef = useRef({ x: 0, y: 0 })
   const startSizeRef = useRef({ width: 0, height: 0 })
   const startMouseRef = useRef({ x: 0, y: 0 })
+  const lastMouseRef = useRef({ x: 0, y: 0, time: 0 })
+  const animationRef = useRef(null)
 
   useEffect(() => {
     setLocalPosition(component.position)
     setLocalSize(component.size)
   }, [component.position, component.size])
 
-  const handleMouseDown = (e) => {
-    if (component.locked?.position || isEditing) return
-    e.preventDefault()
-    setIsDragging(true)
-    startPosRef.current = { ...localPosition }
-    startMouseRef.current = { x: e.clientX, y: e.clientY }
-    onSelect(component.id)
-  }
-
-  const handleMouseMove = (e) => {
-    if (isDragging && !component.locked?.position) {
-      const dx = (e.clientX - startMouseRef.current.x) / zoom
-      const dy = (e.clientY - startMouseRef.current.y) / zoom
-      const newX = Math.max(0, startPosRef.current.x + dx)
-      const newY = Math.max(0, startPosRef.current.y + dy)
-      setLocalPosition({ x: newX, y: newY })
+  const applyInertia = useCallback(() => {
+    if (!physicsEnabled || (Math.abs(velocity.x) < 0.5 && Math.abs(velocity.y) < 0.5)) {
+      setVelocity({ x: 0, y: 0 })
+      return
     }
 
-    if (isResizing && resizeHandle && !component.locked?.size) {
-      const dx = (e.clientX - startMouseRef.current.x) / zoom
-      const dy = (e.clientY - startMouseRef.current.y) / zoom
+    const friction = 0.92
+    const newVelocity = {
+      x: velocity.x * friction,
+      y: velocity.y * friction,
+    }
 
-      let newWidth = startSizeRef.current.width
-      let newHeight = startSizeRef.current.height
-      let newX = startPosRef.current.x
-      let newY = startPosRef.current.y
+    setLocalPosition((prev) => ({
+      x: Math.max(0, prev.x + newVelocity.x),
+      y: Math.max(0, prev.y + newVelocity.y),
+    }))
+    setVelocity(newVelocity)
 
-      if (resizeHandle.includes("e")) newWidth = Math.max(50, startSizeRef.current.width + dx)
-      if (resizeHandle.includes("w")) {
-        newWidth = Math.max(50, startSizeRef.current.width - dx)
-        newX = startPosRef.current.x + (startSizeRef.current.width - newWidth)
+    animationRef.current = requestAnimationFrame(applyInertia)
+  }, [velocity, physicsEnabled])
+
+  useEffect(() => {
+    if (!isDragging && (velocity.x !== 0 || velocity.y !== 0)) {
+      animationRef.current = requestAnimationFrame(applyInertia)
+    }
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
-      if (resizeHandle.includes("s")) newHeight = Math.max(50, startSizeRef.current.height + dy)
-      if (resizeHandle.includes("n")) {
-        newHeight = Math.max(50, startSizeRef.current.height - dy)
-        newY = startPosRef.current.y + (startSizeRef.current.height - newHeight)
-      }
+    }
+  }, [isDragging, velocity, applyInertia])
 
-      if (
-        e.shiftKey &&
-        (resizeHandle === "se" || resizeHandle === "nw" || resizeHandle === "ne" || resizeHandle === "sw")
-      ) {
-        const aspectRatio = startSizeRef.current.width / startSizeRef.current.height
-        if (Math.abs(dx) > Math.abs(dy)) {
-          newHeight = newWidth / aspectRatio
-        } else {
-          newWidth = newHeight * aspectRatio
+  const handleMouseDown = useCallback(
+    (e) => {
+      if (component.locked?.position || isEditing) return
+      if (e.button !== 0) return // Only left click
+
+      e.preventDefault()
+      e.stopPropagation()
+
+      setIsDragging(true)
+      startPosRef.current = { ...localPosition }
+      startMouseRef.current = { x: e.clientX, y: e.clientY }
+      lastMouseRef.current = { x: e.clientX, y: e.clientY, time: Date.now() }
+      onSelect(component.id)
+    },
+    [component.id, component.locked?.position, isEditing, localPosition, onSelect],
+  )
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (isDragging && !component.locked?.position) {
+        const dx = (e.clientX - startMouseRef.current.x) / zoom
+        const dy = (e.clientY - startMouseRef.current.y) / zoom
+        const newX = Math.max(0, startPosRef.current.x + dx)
+        const newY = Math.max(0, startPosRef.current.y + dy)
+
+        // Calculate velocity for physics
+        if (physicsEnabled) {
+          const now = Date.now()
+          const dt = now - lastMouseRef.current.time
+          if (dt > 0) {
+            setVelocity({
+              x: (e.clientX - lastMouseRef.current.x) / zoom,
+              y: (e.clientY - lastMouseRef.current.y) / zoom,
+            })
+          }
+          lastMouseRef.current = { x: e.clientX, y: e.clientY, time: now }
         }
+
+        setLocalPosition({ x: newX, y: newY })
       }
 
-      setLocalSize({ width: newWidth, height: newHeight })
-      setLocalPosition({ x: newX, y: newY })
-    }
-  }
+      if (isResizing && resizeHandle && !component.locked?.size) {
+        const dx = (e.clientX - startMouseRef.current.x) / zoom
+        const dy = (e.clientY - startMouseRef.current.y) / zoom
 
-  const handleMouseUp = () => {
+        let newWidth = startSizeRef.current.width
+        let newHeight = startSizeRef.current.height
+        let newX = startPosRef.current.x
+        let newY = startPosRef.current.y
+
+        const ease = (val) => val // Direct 1:1 for pixel-perfect
+
+        if (resizeHandle.includes("e")) newWidth = Math.max(50, startSizeRef.current.width + ease(dx))
+        if (resizeHandle.includes("w")) {
+          newWidth = Math.max(50, startSizeRef.current.width - ease(dx))
+          newX = startPosRef.current.x + (startSizeRef.current.width - newWidth)
+        }
+        if (resizeHandle.includes("s")) newHeight = Math.max(50, startSizeRef.current.height + ease(dy))
+        if (resizeHandle.includes("n")) {
+          newHeight = Math.max(50, startSizeRef.current.height - ease(dy))
+          newY = startPosRef.current.y + (startSizeRef.current.height - newHeight)
+        }
+
+        // Proportional resize with Shift
+        if (e.shiftKey && ["se", "nw", "ne", "sw"].includes(resizeHandle)) {
+          const aspectRatio = startSizeRef.current.width / startSizeRef.current.height
+          if (Math.abs(dx) > Math.abs(dy)) {
+            newHeight = newWidth / aspectRatio
+          } else {
+            newWidth = newHeight * aspectRatio
+          }
+        }
+
+        setLocalSize({ width: newWidth, height: newHeight })
+        setLocalPosition({ x: newX, y: newY })
+      }
+    },
+    [isDragging, isResizing, resizeHandle, component.locked, zoom, physicsEnabled],
+  )
+
+  const handleMouseUp = useCallback(() => {
     if (isDragging) {
       setIsDragging(false)
       onMove(component.id, localPosition)
@@ -142,7 +220,7 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
       onResize(component.id, localSize)
       onMove(component.id, localPosition)
     }
-  }
+  }, [isDragging, isResizing, component.id, localPosition, localSize, onMove, onResize])
 
   useEffect(() => {
     if (isDragging || isResizing) {
@@ -153,66 +231,91 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
         window.removeEventListener("mouseup", handleMouseUp)
       }
     }
-  }, [isDragging, isResizing, resizeHandle])
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp])
 
-  const handleResizeStart = (e, handle) => {
-    if (component.locked?.size) return
-    e.preventDefault()
-    e.stopPropagation()
-    setIsResizing(true)
-    setResizeHandle(handle)
-    startSizeRef.current = { ...localSize }
-    startPosRef.current = { ...localPosition }
-    startMouseRef.current = { x: e.clientX, y: e.clientY }
-  }
+  const handleResizeStart = useCallback(
+    (e, handle) => {
+      if (component.locked?.size) return
+      e.preventDefault()
+      e.stopPropagation()
+      setIsResizing(true)
+      setResizeHandle(handle)
+      startSizeRef.current = { ...localSize }
+      startPosRef.current = { ...localPosition }
+      startMouseRef.current = { x: e.clientX, y: e.clientY }
+    },
+    [component.locked?.size, localSize, localPosition],
+  )
 
-  const handleDoubleClick = (e) => {
-    if (component.locked?.editing) return
-    e.stopPropagation()
-    const editableTypes = ["text", "button", "card", "heading", "paragraph", "quote", "imageCard", "pricing", "footer"]
-    if (editableTypes.includes(component.type)) {
-      setIsEditing(true)
-    }
-  }
+  const handleDoubleClick = useCallback(
+    (e) => {
+      if (component.locked?.editing) return
+      e.stopPropagation()
+      const editableTypes = [
+        "text",
+        "button",
+        "card",
+        "heading",
+        "paragraph",
+        "quote",
+        "imageCard",
+        "pricing",
+        "footer",
+        "navbar",
+        "navbarItem",
+        "section",
+        "hero",
+        "testimonial",
+        "stats",
+      ]
+      if (editableTypes.includes(component.type)) {
+        setIsEditing(true)
+      }
+    },
+    [component.type, component.locked?.editing],
+  )
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     setIsEditing(false)
-  }
+  }, [])
 
-  const handleKeyDown = (e) => {
-    if (!isSelected || isEditing || component.locked?.position) return
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (!isSelected || isEditing || component.locked?.position) return
 
-    const step = e.shiftKey ? 10 : 1
-    const newPos = { ...localPosition }
+      const step = e.shiftKey ? 10 : 1
+      const newPos = { ...localPosition }
 
-    switch (e.key) {
-      case "ArrowUp":
-        newPos.y = Math.max(0, newPos.y - step)
-        break
-      case "ArrowDown":
-        newPos.y = newPos.y + step
-        break
-      case "ArrowLeft":
-        newPos.x = Math.max(0, newPos.x - step)
-        break
-      case "ArrowRight":
-        newPos.x = newPos.x + step
-        break
-      default:
-        return
-    }
+      switch (e.key) {
+        case "ArrowUp":
+          newPos.y = Math.max(0, newPos.y - step)
+          break
+        case "ArrowDown":
+          newPos.y = newPos.y + step
+          break
+        case "ArrowLeft":
+          newPos.x = Math.max(0, newPos.x - step)
+          break
+        case "ArrowRight":
+          newPos.x = newPos.x + step
+          break
+        default:
+          return
+      }
 
-    e.preventDefault()
-    setLocalPosition(newPos)
-    onMove(component.id, newPos)
-  }
+      e.preventDefault()
+      setLocalPosition(newPos)
+      onMove(component.id, newPos)
+    },
+    [isSelected, isEditing, component.locked?.position, component.id, localPosition, onMove],
+  )
 
   useEffect(() => {
     if (isSelected) {
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [isSelected, localPosition, isEditing, component.locked])
+  }, [isSelected, handleKeyDown])
 
   const getTransformStyle = () => {
     const t = component.transform || {}
@@ -225,6 +328,8 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
     return transforms.length > 0 ? transforms.join(" ") : undefined
   }
 
+  const computedZIndex = isSelected ? 9999 : isDragging ? 9998 : zIndex
+
   const freeformStyle = {
     position: "absolute",
     left: localPosition.x,
@@ -232,6 +337,8 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
     width: localSize.width,
     height: localSize.height,
     transform: getTransformStyle(),
+    zIndex: computedZIndex,
+    transition: isDragging || isResizing ? "none" : "box-shadow 0.2s ease-out",
   }
 
   const renderContent = () => {
@@ -287,9 +394,6 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               fontWeight: props.fontWeight,
               color: props.color,
               padding: props.padding,
-              letterSpacing: props.letterSpacing,
-              lineHeight: props.lineHeight,
-              textAlign: props.textAlign,
             }}
             defaultValue={props.content}
             onChange={(e) => onContentChange(component.id, { content: e.target.value })}
@@ -304,9 +408,6 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               color: props.color,
               padding: props.padding,
               backgroundColor: props.backgroundColor,
-              letterSpacing: props.letterSpacing,
-              lineHeight: props.lineHeight,
-              textAlign: props.textAlign,
               width: "100%",
               height: "100%",
               display: "flex",
@@ -323,12 +424,9 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
             className="w-full h-full resize-none border-none outline-none bg-transparent"
             style={{
               fontSize: props.fontSize,
-              fontWeight: props.fontWeight,
               color: props.color,
               padding: props.padding,
-              letterSpacing: props.letterSpacing,
               lineHeight: props.lineHeight,
-              textAlign: props.textAlign,
             }}
             defaultValue={props.content}
             onChange={(e) => onContentChange(component.id, { content: e.target.value })}
@@ -339,13 +437,10 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
           <div
             style={{
               fontSize: props.fontSize,
-              fontWeight: props.fontWeight,
               color: props.color,
               padding: props.padding,
               backgroundColor: props.backgroundColor,
-              letterSpacing: props.letterSpacing,
               lineHeight: props.lineHeight,
-              textAlign: props.textAlign,
               width: "100%",
               height: "100%",
               overflow: "auto",
@@ -359,11 +454,7 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
         return isEditing ? (
           <input
             className="border-none outline-none bg-transparent text-center w-full"
-            style={{
-              fontSize: props.fontSize,
-              fontWeight: props.fontWeight === "medium" ? 500 : props.fontWeight,
-              color: props.color,
-            }}
+            style={{ fontSize: props.fontSize, color: props.color }}
             defaultValue={props.content}
             onChange={(e) => onContentChange(component.id, { content: e.target.value })}
             onBlur={handleBlur}
@@ -408,7 +499,6 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
             <iframe
               src={props.videoUrl}
               className="w-full h-full"
-              style={{ aspectRatio: props.aspectRatio }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
@@ -424,7 +514,7 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               backgroundColor: props.backgroundColor,
               borderRadius: props.borderRadius,
               border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
-              boxShadow: props.shadow ? "0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3)" : "none",
+              boxShadow: props.shadow ? "0 4px 6px -1px rgb(0 0 0 / 0.3)" : "none",
               ...glowStyle,
             }}
           >
@@ -460,7 +550,6 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               backgroundColor: props.backgroundColor,
               borderRadius: props.borderRadius,
               border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
-              boxShadow: props.shadow ? "0 4px 6px -1px rgb(0 0 0 / 0.3)" : "none",
             }}
           >
             <div className="h-32 overflow-hidden">
@@ -471,27 +560,8 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               />
             </div>
             <div className="p-4 flex-1">
-              {isEditing ? (
-                <>
-                  <input
-                    className="text-base font-semibold border-none outline-none bg-transparent mb-1 text-foreground w-full"
-                    defaultValue={props.title}
-                    onChange={(e) => onContentChange(component.id, { title: e.target.value })}
-                    autoFocus
-                  />
-                  <textarea
-                    className="text-sm resize-none border-none outline-none bg-transparent text-muted-foreground w-full"
-                    defaultValue={props.description}
-                    onChange={(e) => onContentChange(component.id, { description: e.target.value })}
-                    onBlur={handleBlur}
-                  />
-                </>
-              ) : (
-                <>
-                  <h4 className="text-base font-semibold mb-1 text-foreground">{props.title}</h4>
-                  <p className="text-sm text-muted-foreground">{props.description}</p>
-                </>
-              )}
+              <h4 className="text-base font-semibold mb-1 text-foreground">{props.title}</h4>
+              <p className="text-sm text-muted-foreground">{props.description}</p>
             </div>
           </div>
         )
@@ -504,12 +574,9 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               padding: props.padding,
               backgroundColor: props.backgroundColor,
               borderRadius: props.borderRadius,
-              minHeight: props.minHeight,
               border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
-              opacity: props.opacity,
               backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : "none",
               backgroundSize: "cover",
-              backgroundPosition: "center",
             }}
           >
             {!props.backgroundImage && "Container"}
@@ -518,13 +585,12 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
 
       case "divider":
         return (
-          <div className="w-full h-full flex items-center justify-center" style={{ padding: `${props.margin}px 0` }}>
+          <div className="w-full h-full flex items-center justify-center">
             <div
               style={{
                 width: `${props.width}%`,
                 height: props.thickness,
                 backgroundColor: props.color,
-                borderStyle: props.style,
                 boxShadow: props.glowIntensity ? `0 0 ${10 * props.glowIntensity}px ${props.color}` : "none",
               }}
             />
@@ -542,33 +608,12 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               borderLeft: `4px solid ${props.accentColor}`,
             }}
           >
-            {isEditing ? (
-              <>
-                <textarea
-                  className="w-full resize-none border-none outline-none bg-transparent italic mb-2"
-                  style={{ fontSize: props.fontSize, color: props.color, lineHeight: 1.6 }}
-                  defaultValue={props.content}
-                  onChange={(e) => onContentChange(component.id, { content: e.target.value })}
-                  autoFocus
-                />
-                <input
-                  className="text-sm border-none outline-none bg-transparent"
-                  style={{ color: props.accentColor }}
-                  defaultValue={props.author}
-                  onChange={(e) => onContentChange(component.id, { author: e.target.value })}
-                  onBlur={handleBlur}
-                />
-              </>
-            ) : (
-              <>
-                <p className="italic mb-2" style={{ fontSize: props.fontSize, color: props.color, lineHeight: 1.6 }}>
-                  "{props.content}"
-                </p>
-                <p className="text-sm" style={{ color: props.accentColor }}>
-                  — {props.author}
-                </p>
-              </>
-            )}
+            <p className="italic mb-2" style={{ fontSize: props.fontSize, color: props.color }}>
+              "{props.content}"
+            </p>
+            <p className="text-sm" style={{ color: props.accentColor }}>
+              — {props.author}
+            </p>
           </div>
         )
 
@@ -577,15 +622,12 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
         return (
           <div
             className="w-full h-full flex items-center justify-center"
-            style={{
-              padding: props.padding,
-              backgroundColor: props.backgroundColor,
-            }}
+            style={{ padding: props.padding, backgroundColor: props.backgroundColor }}
           >
             <IconComponent
               style={{
-                width: props.iconSize || props.size || 24,
-                height: props.iconSize || props.size || 24,
+                width: props.iconSize || 24,
+                height: props.iconSize || 24,
                 color: props.color,
                 filter: props.glowIntensity ? `drop-shadow(0 0 ${10 * props.glowIntensity}px ${props.color})` : "none",
               }}
@@ -600,52 +642,38 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
             style={{
               backgroundColor: props.backgroundColor,
               borderRadius: props.borderRadius,
-              border: `${props.borderWidth || 1}px solid ${props.featured ? props.accentColor : props.borderColor || "transparent"}`,
-              boxShadow: props.featured
-                ? `0 0 20px ${props.accentColor}30`
-                : props.shadow
-                  ? "0 4px 6px -1px rgb(0 0 0 / 0.3)"
-                  : "none",
-              overflow: "hidden",
+              border: `1px solid ${props.borderColor}`,
+              padding: 24,
             }}
           >
             {props.featured && (
-              <div
-                className="text-center text-xs font-medium py-1"
-                style={{ backgroundColor: props.accentColor, color: props.backgroundColor }}
-              >
-                RECOMMENDED
+              <div className="text-xs font-medium px-2 py-1 rounded-full bg-neon-cyan/20 text-neon-cyan self-start mb-3">
+                Popular
               </div>
             )}
-            <div className="p-6 flex-1 flex flex-col">
-              <h3 className="text-lg font-semibold mb-2" style={{ color: props.color }}>
-                {props.planName}
-              </h3>
-              <div className="mb-4">
-                <span className="text-3xl font-bold" style={{ color: props.accentColor }}>
-                  {props.price}
-                </span>
-                <span className="text-sm text-muted-foreground">/{props.period}</span>
-              </div>
-              <ul className="space-y-2 flex-1 text-sm text-muted-foreground">
-                {(props.features || ["Feature 1", "Feature 2", "Feature 3"]).map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <Check className="w-4 h-4" style={{ color: props.accentColor }} />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className="mt-4 w-full py-2 rounded-lg font-medium transition-colors"
-                style={{
-                  backgroundColor: props.featured ? props.accentColor : "transparent",
-                  color: props.featured ? props.backgroundColor : props.accentColor,
-                  border: `1px solid ${props.accentColor}`,
-                }}
-              >
-                Get Started
-              </button>
+            <h3 className="text-xl font-semibold" style={{ color: props.color }}>
+              {props.planName}
+            </h3>
+            <div className="flex items-baseline gap-1 my-3">
+              <span className="text-3xl font-bold" style={{ color: props.accentColor }}>
+                {props.price}
+              </span>
+              <span className="text-sm text-muted-foreground">/{props.period}</span>
             </div>
+            <ul className="space-y-2 flex-1">
+              {(props.features || []).map((feature, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Check className="w-4 h-4" style={{ color: props.accentColor }} />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              className="mt-4 w-full py-2 rounded-lg font-medium"
+              style={{ backgroundColor: props.accentColor, color: props.backgroundColor }}
+            >
+              Get Started
+            </button>
           </div>
         )
 
@@ -660,7 +688,7 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
               borderTop: `1px solid ${props.borderColor}`,
             }}
           >
-            <div className="flex items-center justify-between h-full">
+            <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-semibold" style={{ color: props.color }}>
                   {props.companyName}
@@ -668,7 +696,7 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
                 <p className="text-sm text-muted-foreground">{props.tagline}</p>
               </div>
               <div className="flex gap-4">
-                {(props.links || ["About", "Contact", "Privacy"]).map((link, i) => (
+                {(props.links || []).map((link, i) => (
                   <a key={i} href="#" className="text-sm hover:underline" style={{ color: props.accentColor }}>
                     {link}
                   </a>
@@ -678,53 +706,228 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
           </div>
         )
 
+      case "navbar":
+        return (
+          <nav
+            className="w-full h-full flex items-center justify-between"
+            style={{
+              backgroundColor: props.backgroundColor,
+              padding: props.padding,
+              borderBottom: `1px solid ${props.borderColor}`,
+              borderRadius: props.borderRadius,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg" style={{ backgroundColor: props.accentColor }} />
+              <span className="font-semibold" style={{ color: props.color }}>
+                {props.logoText}
+              </span>
+            </div>
+            <div className="flex items-center gap-6">
+              {(props.menuItems || []).map((item, i) => (
+                <a key={i} href="#" className="text-sm hover:opacity-80" style={{ color: props.color }}>
+                  {item}
+                </a>
+              ))}
+            </div>
+            <button
+              className="px-4 py-2 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: props.accentColor, color: props.backgroundColor }}
+            >
+              {props.ctaText}
+            </button>
+          </nav>
+        )
+
+      case "section":
+        return (
+          <section
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              backgroundColor: props.backgroundColor,
+              padding: props.padding,
+              minHeight: props.minHeight,
+              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <span className="text-muted-foreground text-sm">Section - Drop components here</span>
+          </section>
+        )
+
+      case "hero":
+        return (
+          <div
+            className="w-full h-full flex flex-col items-center justify-center text-center"
+            style={{
+              backgroundColor: props.backgroundColor,
+              padding: props.padding,
+              backgroundImage: props.backgroundImage
+                ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${props.backgroundImage})`
+                : "none",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              borderRadius: props.borderRadius,
+            }}
+          >
+            <h1 className="text-4xl font-bold mb-4" style={{ color: props.headingColor }}>
+              {props.heading}
+            </h1>
+            <p className="text-lg mb-6 max-w-lg" style={{ color: props.subheadingColor }}>
+              {props.subheading}
+            </p>
+            <button
+              className="px-6 py-3 rounded-lg font-medium"
+              style={{ backgroundColor: props.ctaColor, color: props.ctaTextColor }}
+            >
+              {props.ctaText}
+            </button>
+          </div>
+        )
+
+      case "testimonial":
+        return (
+          <div
+            className="w-full h-full flex flex-col"
+            style={{
+              backgroundColor: props.backgroundColor,
+              padding: props.padding,
+              borderRadius: props.borderRadius,
+              border: `1px solid ${props.borderColor}`,
+            }}
+          >
+            <p className="italic flex-1" style={{ fontSize: props.fontSize, color: props.quoteColor }}>
+              "{props.quote}"
+            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-secondary">
+                {props.avatarSrc && (
+                  <img
+                    src={props.avatarSrc || "/placeholder.svg"}
+                    alt={props.name}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div>
+                <p className="font-medium" style={{ color: props.nameColor }}>
+                  {props.name}
+                </p>
+                <p className="text-sm text-muted-foreground">{props.role}</p>
+              </div>
+            </div>
+          </div>
+        )
+
+      case "stats":
+        return (
+          <div
+            className="w-full h-full grid gap-4"
+            style={{
+              backgroundColor: props.backgroundColor,
+              padding: props.padding,
+              borderRadius: props.borderRadius,
+              gridTemplateColumns: `repeat(${props.columns || 3}, 1fr)`,
+            }}
+          >
+            {(props.stats || []).map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-3xl font-bold" style={{ color: props.numberColor }}>
+                  {stat.value}
+                </p>
+                <p className="text-sm" style={{ color: props.labelColor }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        )
+
+      case "group":
+        return (
+          <div className="w-full h-full relative border border-dashed border-neon-purple/50 rounded-lg">
+            {(component.children || []).map((child) => (
+              <div
+                key={child.id}
+                className="absolute"
+                style={{
+                  left: child.position.x,
+                  top: child.position.y,
+                  width: child.size.width,
+                  height: child.size.height,
+                }}
+              >
+                <ResizableBlock
+                  component={child}
+                  isSelected={false}
+                  onSelect={() => {}}
+                  onMove={() => {}}
+                  onResize={() => {}}
+                  onContentChange={() => {}}
+                  zoom={zoom}
+                />
+              </div>
+            ))}
+          </div>
+        )
+
       default:
-        return <div className="w-full h-full flex items-center justify-center text-muted-foreground">Unknown</div>
+        return (
+          <div className="w-full h-full bg-secondary rounded flex items-center justify-center text-xs text-muted-foreground">
+            {component.type}
+          </div>
+        )
     }
   }
 
-  const isLocked = component.locked?.position || component.locked?.size || component.locked?.editing
+  const cursorStyle = () => {
+    if (component.locked?.position) return "not-allowed"
+    if (isDragging) return "grabbing"
+    return "grab"
+  }
 
   return (
     <div
       ref={blockRef}
       style={freeformStyle}
-      className={`
-        group select-none
-        ${isSelected ? "ring-2 ring-neon-cyan ring-offset-1 ring-offset-background" : ""}
-        ${isDragging ? "opacity-80 cursor-grabbing" : "cursor-grab"}
-        ${isLocked ? "cursor-not-allowed" : ""}
-      `}
+      className={`group ${isDragging ? "cursor-grabbing" : ""}`}
+      onMouseDown={handleMouseDown}
+      onDoubleClick={handleDoubleClick}
       onClick={(e) => {
         e.stopPropagation()
         onSelect(component.id)
       }}
-      onMouseDown={handleMouseDown}
-      onDoubleClick={handleDoubleClick}
     >
+      {/* Selection outline */}
+      {isSelected && (
+        <div
+          className="absolute -inset-px border-2 border-neon-cyan rounded pointer-events-none"
+          style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.3)" }}
+        />
+      )}
+
       {/* Lock indicator */}
-      {isLocked && isSelected && (
-        <div className="absolute -top-6 left-0 flex items-center gap-1 text-xs text-neon-magenta bg-background/80 px-2 py-0.5 rounded">
+      {(component.locked?.position || component.locked?.size || component.locked?.editing) && (
+        <div className="absolute -top-6 left-0 flex items-center gap-1 px-2 py-0.5 rounded bg-card/90 text-xs text-neon-magenta border border-neon-magenta/30">
           <Lock className="w-3 h-3" />
           Locked
         </div>
       )}
 
-      {/* Position indicator when dragging */}
+      {/* Coordinates display while dragging */}
       {isDragging && (
-        <div className="absolute -top-6 right-0 text-xs text-neon-cyan bg-background/80 px-2 py-0.5 rounded font-mono">
+        <div className="absolute -top-8 left-0 px-2 py-1 rounded bg-neon-cyan/90 text-background text-xs font-mono">
           {Math.round(localPosition.x)}, {Math.round(localPosition.y)}
         </div>
       )}
 
-      {/* Size indicator when resizing */}
+      {/* Size display while resizing */}
       {isResizing && (
-        <div className="absolute -bottom-6 right-0 text-xs text-neon-cyan bg-background/80 px-2 py-0.5 rounded font-mono">
+        <div className="absolute -bottom-8 right-0 px-2 py-1 rounded bg-neon-magenta/90 text-background text-xs font-mono">
           {Math.round(localSize.width)} × {Math.round(localSize.height)}
         </div>
       )}
-
-      {renderContent()}
 
       {/* Resize handles */}
       {isSelected && !component.locked?.size && (
@@ -732,22 +935,46 @@ export function ResizableBlock({ component, isSelected, onSelect, onMove, onResi
           {resizeHandles.map((handle) => (
             <div
               key={handle}
-              className={`
-                absolute w-3 h-3 bg-neon-cyan border-2 border-background rounded-sm z-10
-                ${handle === "n" ? "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-n-resize" : ""}
-                ${handle === "s" ? "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-s-resize" : ""}
-                ${handle === "e" ? "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 cursor-e-resize" : ""}
-                ${handle === "w" ? "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-w-resize" : ""}
-                ${handle === "ne" ? "top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-ne-resize" : ""}
-                ${handle === "nw" ? "top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nw-resize" : ""}
-                ${handle === "se" ? "bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-se-resize" : ""}
-                ${handle === "sw" ? "bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-sw-resize" : ""}
-              `}
+              className={`absolute w-3 h-3 bg-neon-cyan border-2 border-background rounded-sm cursor-${getResizeCursor(handle)} hover:bg-neon-magenta transition-colors z-10`}
+              style={getHandlePosition(handle)}
               onMouseDown={(e) => handleResizeStart(e, handle)}
             />
           ))}
         </>
       )}
+
+      {/* Content */}
+      <div className="w-full h-full overflow-hidden" style={{ cursor: cursorStyle() }}>
+        {renderContent()}
+      </div>
     </div>
   )
+}
+
+function getHandlePosition(handle) {
+  const positions = {
+    n: { top: -5, left: "50%", transform: "translateX(-50%)" },
+    s: { bottom: -5, left: "50%", transform: "translateX(-50%)" },
+    e: { right: -5, top: "50%", transform: "translateY(-50%)" },
+    w: { left: -5, top: "50%", transform: "translateY(-50%)" },
+    ne: { top: -5, right: -5 },
+    nw: { top: -5, left: -5 },
+    se: { bottom: -5, right: -5 },
+    sw: { bottom: -5, left: -5 },
+  }
+  return positions[handle]
+}
+
+function getResizeCursor(handle) {
+  const cursors = {
+    n: "ns-resize",
+    s: "ns-resize",
+    e: "ew-resize",
+    w: "ew-resize",
+    ne: "nesw-resize",
+    sw: "nesw-resize",
+    nw: "nwse-resize",
+    se: "nwse-resize",
+  }
+  return cursors[handle]
 }

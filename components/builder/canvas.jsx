@@ -13,6 +13,7 @@ export function Canvas({
   pan,
   snappingEnabled,
   snapGuides,
+  physicsEnabled,
   onSelect,
   onMove,
   onResize,
@@ -63,7 +64,6 @@ export function Canvas({
           centerY: comp.position.y + comp.size.height / 2,
         }
 
-        // Vertical snapping (X axis)
         const xSnaps = [
           { moving: "left", target: "left" },
           { moving: "left", target: "right" },
@@ -82,7 +82,6 @@ export function Canvas({
           }
         })
 
-        // Horizontal snapping (Y axis)
         const ySnaps = [
           { moving: "top", target: "top" },
           { moving: "top", target: "bottom" },
@@ -125,12 +124,7 @@ export function Canvas({
         onSelect(null)
         if (e.button === 1 || (e.button === 0 && e.altKey)) {
           setIsPanning(true)
-          panStartRef.current = {
-            x: e.clientX,
-            y: e.clientY,
-            panX: pan.x,
-            panY: pan.y,
-          }
+          panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y }
         }
       }
     },
@@ -142,10 +136,7 @@ export function Canvas({
       if (isPanning) {
         const dx = e.clientX - panStartRef.current.x
         const dy = e.clientY - panStartRef.current.y
-        onPanChange({
-          x: panStartRef.current.panX + dx,
-          y: panStartRef.current.panY + dy,
-        })
+        onPanChange({ x: panStartRef.current.panX + dx, y: panStartRef.current.panY + dy })
       }
     },
     [isPanning, onPanChange],
@@ -180,6 +171,8 @@ export function Canvas({
     onPanChange({ x: 0, y: 0 })
   }
 
+  const sortedComponents = [...components].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0))
+
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       {/* Zoom Controls */}
@@ -211,7 +204,14 @@ export function Canvas({
             <Maximize2 className="w-4 h-4" />
           </Button>
         </div>
-        <span className="text-xs text-neon-cyan font-medium">FREE MODE</span>
+        <div className="flex items-center gap-2">
+          {physicsEnabled && (
+            <span className="text-xs text-neon-magenta px-2 py-0.5 rounded bg-neon-magenta/10 border border-neon-magenta/30">
+              Physics ON
+            </span>
+          )}
+          <span className="text-xs text-neon-cyan font-medium">FREE MODE</span>
+        </div>
       </div>
 
       {/* Canvas Area */}
@@ -252,11 +252,13 @@ export function Canvas({
           ))}
 
           <div className="relative p-6 min-h-full">
-            {components.map((component) => (
+            {sortedComponents.map((component) => (
               <ResizableBlock
                 key={component.id}
                 component={component}
                 isSelected={selectedId === component.id}
+                zIndex={component.zIndex || 1}
+                physicsEnabled={physicsEnabled}
                 onSelect={onSelect}
                 onMove={(id, pos) => {
                   const snappedPos = calculateSnapGuides(id, pos, component.size)
