@@ -139,7 +139,7 @@ export function InspectorPanel({
 
   if (!component) {
     return (
-      <div className="w-72 h-full bg-sidebar border-l border-sidebar-border p-4 relative">
+      <div className="w-100 h-full bg-sidebar border-l border-sidebar-border p-4 relative">
         <Button variant="ghost" size="icon" className="absolute top-2 left-2 w-6 h-6" onClick={onToggleCollapse}>
           <ChevronRight className="w-4 h-4" />
         </Button>
@@ -174,7 +174,7 @@ export function InspectorPanel({
   }
 
   return (
-    <div className="w-72 h-full bg-sidebar border-l border-sidebar-border flex flex-col relative">
+    <div className="w-100 h-full bg-sidebar border-l border-sidebar-border flex flex-col relative">
       <Button variant="ghost" size="icon" className="absolute top-2 left-2 w-6 h-6 z-10" onClick={onToggleCollapse}>
         <ChevronRight className="w-4 h-4" />
       </Button>

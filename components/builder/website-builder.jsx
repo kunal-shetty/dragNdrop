@@ -260,21 +260,6 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
         <PingEffect key={ping.id} x={ping.x} y={ping.y} color={ping.color} />
       ))}
 
-      {/* Auto-save indicator */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
-        {saveStatus === "saving" ? (
-          <>
-            <Save className="w-3 h-3 text-neon-cyan animate-pulse" />
-            <span className="text-muted-foreground">Saving...</span>
-          </>
-        ) : (
-          <>
-            <Check className="w-3 h-3 text-neon-cyan" />
-            <span className="text-muted-foreground">Saved</span>
-          </>
-        )}
-      </div>
-
       <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
         <Sidebar
           onUndo={undo}

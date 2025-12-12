@@ -211,7 +211,6 @@ export function Canvas({
             <Maximize2 className="w-4 h-4" />
           </Button>
         </div>
-        <span className="text-xs text-neon-cyan font-medium">FREE MODE</span>
       </div>
 
       {/* Canvas Area */}
