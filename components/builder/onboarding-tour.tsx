@@ -6,7 +6,7 @@ import { X, ChevronRight, ChevronLeft } from "lucide-react"
 
 const tourSteps = [
   {
-    title: "Welcome to the Website Builder!",
+    title: "Welcome to BuildIT - The Ultimate Website Builder!",
     description:
       "Let me show you around. This powerful editor lets you create stunning websites with drag-and-drop ease.",
     highlight: null,

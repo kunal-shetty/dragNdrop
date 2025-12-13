@@ -27,6 +27,7 @@ export function AIChatbot() {
 
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [hasTyped, setHasTyped] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -49,6 +50,7 @@ export function AIChatbot() {
       const response = await generateChatResponse(input, messages)
 
       if (response.success) {
+        setHasTyped(false);
         const fullText = response.content
         let index = 0
 
@@ -87,10 +89,12 @@ export function AIChatbot() {
       ])
     } finally {
       setIsLoading(false)
+      setHasTyped(true);
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (!hasTyped) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -192,11 +196,11 @@ export function AIChatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about features, shortcuts..."
                 className="flex-1 bg-background/50"
-                disabled={isLoading}
+                disabled={isLoading || !hasTyped}
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || !hasTyped}
                 size="icon"
                 className="bg-gradient-to-r from-neon-cyan to-neon-purple hover:opacity-90"
               >
