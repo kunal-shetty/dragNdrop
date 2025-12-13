@@ -1,8 +1,6 @@
-"use server"
-
 import { GoogleGenAI } from "@google/genai"
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCXxcAPaEb9Voa76cRh-JdMwy8sBn3qOKk"
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
 const ai = new GoogleGenAI({ apiKey })
 
 export interface ChatMessage {
@@ -13,7 +11,7 @@ export interface ChatMessage {
 export async function generateChatResponse(
   userPrompt: string,
   contextMessages: ChatMessage[] = [],
-): Promise<{ success: boolean; content: string; error?: string }> {
+) {
   try {
     if (!apiKey) {
       return {
@@ -23,12 +21,14 @@ export async function generateChatResponse(
       }
     }
 
-    // Build conversation history
+    // Build context
     let historyContext = ""
     if (contextMessages.length > 0) {
       historyContext =
         "Previous conversation:\n" +
-        contextMessages.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n") +
+        contextMessages
+          .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+          .join("\n") +
         "\n\n"
     }
 
@@ -57,17 +57,27 @@ export async function generateChatResponse(
 - Concise (under 200 words)
 - Friendly and encouraging
 - Action-oriented with bullet points
-- Focused on practical guidance`
+- Focused on practical guidance
+
+Always respond in 3–6 short bullet points. 
+Never exceed 80 words. Be concise and direct.
+
+IMPORTANT: Do not use asterisks (*) for bold or emphasis. 
+Do not output Markdown formatting. 
+Write entirely in plain text.
+`
 
     const prompt = `${systemInstruction}
+
+Please respond concisely, avoid long explanations, and focus only on what the user needs.
 
 ${historyContext}
 User: ${userPrompt}
 
-Respond naturally and helpfully:`
+Respond naturally and helpfully`
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-2.5-flash", // required for response.text support
       contents: prompt,
       config: {
         temperature: 0.7,
@@ -78,6 +88,7 @@ Respond naturally and helpfully:`
       success: true,
       content: response.text || "I'm having trouble generating a response. Please try again.",
     }
+
   } catch (error) {
     console.error("Chat error:", error)
     return {

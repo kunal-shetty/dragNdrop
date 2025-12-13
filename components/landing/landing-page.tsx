@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import AlternatingBuilderCTA from "./ctas"
 
 // Particle system
 interface Particle {
@@ -116,6 +117,11 @@ function useParticles(count: number, enabled: boolean) {
 }
 
 export function LandingPage() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [showSettings, setShowSettings] = useState(false)
   const [settings, setSettings] = useState({
@@ -136,8 +142,13 @@ export function LandingPage() {
   }, [])
 
   // Parallax calculation
-  const parallaxX = (mousePosition.x - window.innerWidth / 2) * 0.02 * settings.motionStrength
-  const parallaxY = (mousePosition.y - window.innerHeight / 2) * 0.02 * settings.motionStrength
+  const parallaxX = mounted
+    ? (mousePosition.x - window.innerWidth / 2) * 0.02 * settings.motionStrength
+    : 0
+
+  const parallaxY = mounted
+    ? (mousePosition.y - window.innerHeight / 2) * 0.02 * settings.motionStrength
+    : 0
 
   const features = [
     { icon: MousePointer2, title: "Drag & Drop", description: "Intuitive interface for effortless website creation" },
@@ -560,7 +571,9 @@ export function LandingPage() {
             </Button>
           </Link>
         </div>
+
       </section>
+        <AlternatingBuilderCTA/>
 
       {/* Footer */}
       <footer className="relative z-20 px-8 py-10 border-t border-border/30">

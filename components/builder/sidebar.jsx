@@ -218,7 +218,6 @@ export function Sidebar({
         <Button
           size="sm"
           onClick={onExport}
-          disabled={!canExport}
           className="w-full h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90 disabled:opacity-50"
         >
           <Download className="w-4 h-4 mr-2" />

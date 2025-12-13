@@ -328,7 +328,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
             </>
           )}
           <span className="ml-2 text-muted-foreground border-l border-border pl-2">
-            {usageCount}/{limit} exports
+            {usageCount > 5 ? 5 : usageCount}/{limit} exports
           </span>
         </div>
 

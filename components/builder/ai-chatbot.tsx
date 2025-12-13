@@ -41,8 +41,26 @@ export function AIChatbot() {
       const response = await generateChatResponse(input, messages)
 
       if (response.success) {
-        setMessages((prev) => [...prev, { role: "assistant", content: response.content }])
-      } else {
+        const fullText = response.content
+        let index = 0
+
+        // Add an empty assistant message first
+        setMessages((prev) => [...prev, { role: "assistant", content: "" }])
+
+        const interval = setInterval(() => {
+          index++
+
+          // Update the LAST message only
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1].content = fullText.slice(0, index)
+            return updated
+          })
+
+          if (index >= fullText.length) clearInterval(interval)
+        }, 15) // <-- typing speed (lower = faster)
+      }
+      else {
         setMessages((prev) => [
           ...prev,
           {
@@ -113,11 +131,10 @@ export function AIChatbot() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                    msg.role === "user"
+                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${msg.role === "user"
                       ? "bg-gradient-to-r from-neon-cyan to-neon-purple text-white"
                       : "bg-secondary/50 text-foreground"
-                  }`}
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 </div>
