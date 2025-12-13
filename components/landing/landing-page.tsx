@@ -142,13 +142,9 @@ export function LandingPage() {
   }, [])
 
   // Parallax calculation
-  const parallaxX = mounted
-    ? (mousePosition.x - window.innerWidth / 2) * 0.02 * settings.motionStrength
-    : 0
+  const parallaxX = mounted ? (mousePosition.x - window.innerWidth / 2) * 0.02 * settings.motionStrength : 0
 
-  const parallaxY = mounted
-    ? (mousePosition.y - window.innerHeight / 2) * 0.02 * settings.motionStrength
-    : 0
+  const parallaxY = mounted ? (mousePosition.y - window.innerHeight / 2) * 0.02 * settings.motionStrength : 0
 
   const features = [
     { icon: MousePointer2, title: "Drag & Drop", description: "Intuitive interface for effortless website creation" },
@@ -320,7 +316,7 @@ export function LandingPage() {
             <Sparkles className="w-5 h-5 text-neon-cyan" />
           </div>
           <span className="text-lg font-semibold tracking-tight text-foreground">
-            Neon<span className="text-neon-cyan">Forge</span>
+            Build<span className="text-neon-cyan">It</span>
           </span>
         </div>
         <div className="flex items-center gap-6">
@@ -331,8 +327,12 @@ export function LandingPage() {
             Examples
           </Link>
           <Link href="/editor">
-            <Button className="bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 h-9">
-              Launch Editor
+            <Button
+              className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-10 h-12 text-base font-medium"
+              style={{ boxShadow: `0 0 ${30 * settings.glowIntensity}px #22d3ee40` }}
+            >
+              Launch BuildIt
+              <Sparkles className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         </div>
@@ -405,7 +405,7 @@ export function LandingPage() {
                 <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-chart-4/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-chart-2/60" />
-                <span className="ml-3 text-xs text-muted-foreground font-mono">NeonForge Editor</span>
+                <span className="ml-3 text-xs text-muted-foreground font-mono">BuildIt Editor</span>
               </div>
               <div className="flex h-72">
                 <div className="w-40 border-r border-border p-3 space-y-2">
@@ -517,9 +517,9 @@ export function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-semibold mb-3">
-              View <span className="text-neon-purple">Examples</span>
+              View <span className="text-neon-purple">Gallery</span> of Possibilities
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">See what you can build with NeonForge</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">See what you can build with BuildIt</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -541,7 +541,14 @@ export function LandingPage() {
                 </div>
                 <div className="p-4">
                   <h4 className="font-medium mb-1">{example.title}</h4>
-                  <p className="text-xs text-muted-foreground">Built with NeonForge</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-neon-cyan" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-neon-magenta" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-neon-purple" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Built with BuildIt</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -563,17 +570,16 @@ export function LandingPage() {
           <Link href="/editor">
             <Button
               size="lg"
-              className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-10 h-12 text-base font-medium"
+              className="bg-neon-cyan text-background hover:bg-neon-cyan/90 w-full h-12 text-base font-medium"
               style={{ boxShadow: `0 0 ${30 * settings.glowIntensity}px #22d3ee40` }}
             >
-              Launch NeonForge
+              Launch BuildIt
               <Sparkles className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         </div>
-
       </section>
-        <AlternatingBuilderCTA/>
+      <AlternatingBuilderCTA />
 
       {/* Footer */}
       <footer className="relative z-20 px-8 py-10 border-t border-border/30">
@@ -594,7 +600,7 @@ export function LandingPage() {
                 <Sparkles className="w-3.5 h-3.5 text-neon-cyan" />
               </div>
               <span className="font-medium tracking-tight">
-                Neon<span className="text-neon-cyan">Forge</span>
+                Build<span className="text-neon-cyan">It</span>
               </span>
             </div>
             <p className="text-xs text-muted-foreground">Built for creators who dare to be different</p>

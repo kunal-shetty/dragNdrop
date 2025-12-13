@@ -91,7 +91,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
 
   const [saveStatus, setSaveStatus] = useState("saved")
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false)
-  const [showLayerPanel, setShowLayerPanel] = useState(true)
+  const [showLayerPanel, setShowLayerPanel] = useState(false)
   const [showHistoryPanel, setShowHistoryPanel] = useState(false)
   const [responsiveMode, setResponsiveMode] = useState("desktop")
   const [physicsEnabled, setPhysicsEnabled] = useState(false)
@@ -135,6 +135,12 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
     const timer = setTimeout(() => setSaveStatus("saved"), 500)
     return () => clearTimeout(timer)
   }, [components])
+
+  useEffect(() => {
+    if (selectedId && inspectorCollapsed) {
+      setInspectorCollapsed(false)
+    }
+  }, [selectedId])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -337,24 +343,6 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           {previewMode ? "Exit Preview" : "Preview Mode"}
         </Button>
 
-        {/* Auto-save indicator */}
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
-          {saveStatus === "saving" ? (
-            <>
-              <Save className="w-3 h-3 text-neon-cyan animate-pulse" />
-              <span className="text-muted-foreground">Saving...</span>
-            </>
-          ) : (
-            <>
-              <Check className="w-3 h-3 text-neon-cyan" />
-              <span className="text-muted-foreground">Saved</span>
-            </>
-          )}
-          <span className="ml-2 text-muted-foreground border-l border-border pl-2">
-            {usageCount > 5 ? 5 : usageCount}/{limit} exports
-          </span>
-        </div>
-
         <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
           {!previewMode && !sidebarCollapsed && (
             <Sidebar
@@ -489,6 +477,23 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
             />
           )}
         </DndContext>
+
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
+          {saveStatus === "saving" ? (
+            <>
+              <Save className="w-3 h-3 text-neon-cyan animate-pulse" />
+              <span className="text-muted-foreground">Saving...</span>
+            </>
+          ) : (
+            <>
+              <Check className="w-3 h-3 text-neon-cyan" />
+              <span className="text-muted-foreground">Saved</span>
+            </>
+          )}
+          <span className="ml-2 text-muted-foreground border-l border-border pl-2">
+            {usageCount > 5 ? 5 : usageCount}/{limit} exports
+          </span>
+        </div>
 
         {/* Premium Modal */}
         <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} />
