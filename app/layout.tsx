@@ -19,10 +19,10 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "NeonForge - Modern Website Builder",
+  title: "BuildIt - Modern Website Builder",
   description:
     "Build stunning websites with our modern drag-and-drop editor featuring cyberpunk aesthetics and powerful customization",
-    generator: 'v0.app'
+  generator: "v0.app",
 }
 
 export const viewport: Viewport = {
@@ -32,11 +32,7 @@ export const viewport: Viewport = {
   themeColor: "#0a0a14",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}>

@@ -12,15 +12,18 @@ import { CollaborationBar } from "./collaboration-bar"
 import { RemoteCursor, PingEffect } from "./remote-cursor"
 import { HistoryPanel } from "./history-panel"
 import { MobileWarning } from "./mobile-warning"
-import { PremiumModal, usePremiumModal } from "./premium-modal"
+import { PremiumModal } from "./premium-modal"
 import { exportToHTML, downloadHTML } from "@/lib/export-html"
-import { Save, Check } from "lucide-react"
+import { Save, Check, Eye, EyeOff } from "lucide-react"
 import { generateId } from "@/lib/generate-id"
 import { AIChatbot } from "./ai-chatbot"
 import { OnboardingTour } from "./onboarding-tour"
+import { Button } from "@/components/ui/button"
+import { trackUsage, usageCount, limit } from "@/lib/usage-tracking"
 
 export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [docId] = useState(() => documentId || generateId())
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false)
 
   const {
     components,
@@ -92,15 +95,8 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [showHistoryPanel, setShowHistoryPanel] = useState(false)
   const [responsiveMode, setResponsiveMode] = useState("desktop")
   const [physicsEnabled, setPhysicsEnabled] = useState(false)
-
-  const {
-    isOpen: isPremiumOpen,
-    setIsOpen: setIsPremiumOpen,
-    trackUsage,
-    canExport,
-    usageCount,
-    limit,
-  } = usePremiumModal()
+  const [previewMode, setPreviewMode] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     const savedState = localStorage.getItem("inspector-collapsed")
@@ -175,11 +171,12 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
 
   const handleExport = useCallback(() => {
     if (!trackUsage()) {
-      return // Premium modal will be shown
+      setIsPremiumOpen(true) // Premium modal will be shown
+      return
     }
     const html = exportToHTML(components)
     downloadHTML(html)
-  }, [components, trackUsage])
+  }, [components, trackUsage, setIsPremiumOpen])
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -290,6 +287,22 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
     }
   }
 
+  const togglePreviewMode = () => {
+    setPreviewMode(!previewMode)
+    if (!previewMode) {
+      // Entering preview mode - collapse all panels
+      setSidebarCollapsed(true)
+      setInspectorCollapsed(true)
+      setShowLayerPanel(false)
+      setShowHistoryPanel(false)
+    } else {
+      // Exiting preview mode - restore panels
+      setSidebarCollapsed(false)
+      setInspectorCollapsed(false)
+      setShowLayerPanel(true)
+    }
+  }
+
   return (
     <MobileWarning>
       <OnboardingTour />
@@ -314,6 +327,16 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           <PingEffect key={ping.id} x={ping.x} y={ping.y} color={ping.color} />
         ))}
 
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={togglePreviewMode}
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-card/90 backdrop-blur-sm border-border gap-2"
+        >
+          {previewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {previewMode ? "Exit Preview" : "Preview Mode"}
+        </Button>
+
         {/* Auto-save indicator */}
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
           {saveStatus === "saving" ? (
@@ -333,29 +356,32 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
         </div>
 
         <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-          <Sidebar
-            onUndo={undo}
-            onRedo={redo}
-            onClear={clearCanvas}
-            onExport={handleExport}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            canExport={canExport}
-            snappingEnabled={snappingEnabled}
-            onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
-            physicsEnabled={physicsEnabled}
-            onTogglePhysics={() => setPhysicsEnabled(!physicsEnabled)}
-            customComponents={customComponents}
-            onDeleteCustomComponent={deleteCustomComponent}
-            showLayerPanel={showLayerPanel}
-            onToggleLayerPanel={() => setShowLayerPanel(!showLayerPanel)}
-            showHistoryPanel={showHistoryPanel}
-            onToggleHistoryPanel={() => setShowHistoryPanel(!showHistoryPanel)}
-            responsiveMode={responsiveMode}
-            onResponsiveModeChange={setResponsiveMode}
-          />
+          {!previewMode && !sidebarCollapsed && (
+            <Sidebar
+              onUndo={undo}
+              onRedo={redo}
+              onClear={clearCanvas}
+              onExport={handleExport}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              canExport={true}
+              snappingEnabled={snappingEnabled}
+              onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
+              physicsEnabled={physicsEnabled}
+              onTogglePhysics={() => setPhysicsEnabled(!physicsEnabled)}
+              customComponents={customComponents}
+              onDeleteCustomComponent={deleteCustomComponent}
+              showLayerPanel={showLayerPanel}
+              onToggleLayerPanel={() => setShowLayerPanel(!showLayerPanel)}
+              showHistoryPanel={showHistoryPanel}
+              onToggleHistoryPanel={() => setShowHistoryPanel(!showHistoryPanel)}
+              responsiveMode={responsiveMode}
+              onResponsiveModeChange={setResponsiveMode}
+              onCollapse={() => setSidebarCollapsed(true)}
+            />
+          )}
 
-          {showLayerPanel && (
+          {!previewMode && showLayerPanel && (
             <LayerPanel
               components={components}
               selectedId={selectedId}
@@ -385,28 +411,31 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           >
             <Canvas
               components={components}
-              selectedId={selectedId}
-              selectedIds={selectedIds}
+              selectedId={previewMode ? null : selectedId}
+              selectedIds={previewMode ? [] : selectedIds}
               zoom={zoom}
               pan={pan}
               snappingEnabled={snappingEnabled}
               snapGuides={snapGuides}
               physicsEnabled={physicsEnabled}
-              onSelect={setSelectedId}
-              onMultiSelect={setSelectedIds}
+              onSelect={previewMode ? () => {} : setSelectedId}
+              onMultiSelect={previewMode ? () => {} : setSelectedIds}
               onMove={(id, pos) => {
+                if (previewMode) return
                 moveComponent(id, pos)
                 if (collaborationEnabled) {
                   sendComponentUpdate({ type: "move", id, position: pos })
                 }
               }}
               onResize={(id, size) => {
+                if (previewMode) return
                 resizeComponent(id, size)
                 if (collaborationEnabled) {
                   sendComponentUpdate({ type: "resize", id, size })
                 }
               }}
               onContentChange={(id, props) => {
+                if (previewMode) return
                 updateComponentProps(id, props)
                 if (collaborationEnabled) {
                   sendComponentUpdate({ type: "props", id, props })
@@ -421,7 +450,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
             />
           </div>
 
-          {showHistoryPanel && (
+          {!previewMode && showHistoryPanel && (
             <HistoryPanel
               history={history}
               historyIndex={historyIndex}
@@ -430,31 +459,35 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
             />
           )}
 
-          <InspectorPanel
-            component={selectedComponent}
-            collapsed={inspectorCollapsed}
-            onToggleCollapse={() => setInspectorCollapsed(!inspectorCollapsed)}
-            onUpdateProps={(props) => {
-              if (selectedId) {
-                updateComponentProps(selectedId, props)
-                if (collaborationEnabled) {
-                  sendComponentUpdate({ type: "props", id: selectedId, props })
+          {!previewMode && (
+            <InspectorPanel
+              component={selectedComponent}
+              collapsed={inspectorCollapsed}
+              onToggleCollapse={() => setInspectorCollapsed(!inspectorCollapsed)}
+              onUpdateProps={(props) => {
+                if (selectedId) {
+                  updateComponentProps(selectedId, props)
+                  if (collaborationEnabled) {
+                    sendComponentUpdate({ type: "props", id: selectedId, props })
+                  }
                 }
-              }
-            }}
-            onUpdateComponent={(updates) => selectedId && updateComponent(selectedId, updates)}
-            onUpdateFromJSON={(json) => selectedId && updateComponentFromJSON(selectedId, json)}
-            onToggleLock={(lockType) => selectedId && toggleLock(selectedId, lockType)}
-            onDuplicate={duplicateComponent}
-            onDelete={deleteComponent}
-            onSaveAsCustom={(name) => selectedComponent && saveCustomComponent(selectedComponent, name)}
-            onBringToFront={() => selectedId && bringToFront(selectedId)}
-            onSendToBack={() => selectedId && sendToBack(selectedId)}
-            snappingEnabled={snappingEnabled}
-            onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
-            onTypingStart={collaborationEnabled ? startTyping : undefined}
-            onTypingEnd={collaborationEnabled ? endTyping : undefined}
-          />
+              }}
+              onUpdateComponent={(updates) => selectedId && updateComponent(selectedId, updates)}
+              onUpdateFromJSON={(json) => selectedId && updateComponentFromJSON(selectedId, json)}
+              onToggleLock={(lockType) => selectedId && toggleLock(selectedId, lockType)}
+              onDuplicate={duplicateComponent}
+              onDelete={deleteComponent}
+              onSaveAsCustom={(name) => selectedComponent && saveCustomComponent(selectedComponent, name)}
+              onBringToFront={() => selectedId && bringToFront(selectedId)}
+              onSendToBack={() => selectedId && sendToBack(selectedId)}
+              onBringForward={() => selectedId && bringForward(selectedId)}
+              onSendBackward={() => selectedId && sendBackward(selectedId)}
+              snappingEnabled={snappingEnabled}
+              onToggleSnapping={() => setSnappingEnabled(!snappingEnabled)}
+              onTypingStart={collaborationEnabled ? startTyping : undefined}
+              onTypingEnd={collaborationEnabled ? endTyping : undefined}
+            />
+          )}
         </DndContext>
 
         {/* Premium Modal */}

@@ -11,6 +11,7 @@ import {
   Download,
   Sparkles,
   ChevronDown,
+  ChevronLeft,
   Type,
   ImageIcon,
   LayoutGrid,
@@ -50,6 +51,7 @@ export function Sidebar({
   onToggleLayerPanel,
   showHistoryPanel,
   onToggleHistoryPanel,
+  onCollapse,
 }) {
   const [openCategories, setOpenCategories] = useState(["basic", "sections", "custom"])
 
@@ -65,7 +67,17 @@ export function Sidebar({
   }))
 
   return (
-    <div className="w-56 h-full bg-sidebar border-r border-sidebar-border flex flex-col">
+    <div className="w-56 h-full bg-sidebar border-r border-sidebar-border flex flex-col relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onCollapse}
+        className="absolute top-2 right-2 w-6 h-6 z-10 hover:bg-neon-cyan/10"
+        title="Collapse sidebar"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </Button>
+
       {/* Header with Logo */}
       <div className="p-4 border-b border-sidebar-border">
         <Link href="/" className="flex items-center gap-3 group">
@@ -73,7 +85,7 @@ export function Sidebar({
             <Sparkles className="w-4 h-4 text-neon-cyan" />
           </div>
           <span className="text-base font-semibold tracking-wide text-sidebar-foreground">
-            NEON<span className="text-neon-cyan">FORGE</span>
+            Build<span className="text-neon-cyan">It</span>
           </span>
         </Link>
       </div>

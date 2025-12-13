@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { X, Zap, Crown, Infinity, Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-const USAGE_KEY = "neonforge-usage"
+const USAGE_KEY = "buildit-usage"
 const DAILY_LIMIT = 5
 
 const pricingTiers = [
@@ -47,7 +47,6 @@ const handlePlanClick = (planName) => {
   console.log("Selected plan:", planName)
   window.location.href = `/checkout?plan=${planName.toLowerCase()}`
 }
-
 
 export function usePremiumModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -131,8 +130,9 @@ export function PremiumModal({ isOpen, onClose }) {
               return (
                 <div
                   key={tier.name}
-                  className={`relative rounded-xl border p-6 transition-all duration-300 hover:scale-105 ${tier.popular ? `border-${tier.color}/60 bg-${tier.color}/5` : "border-border bg-card/50"
-                    }`}
+                  className={`relative rounded-xl border p-6 transition-all duration-300 hover:scale-105 ${
+                    tier.popular ? `border-${tier.color}/60 bg-${tier.color}/5` : "border-border bg-card/50"
+                  }`}
                   style={{
                     boxShadow: tier.popular
                       ? `0 0 30px oklch(0.75 0.2 ${tier.color === "neon-magenta" ? 330 : 195} / 0.2)`
@@ -165,10 +165,11 @@ export function PremiumModal({ isOpen, onClose }) {
                   </ul>
                   <Button
                     onClick={() => handlePlanClick(tier.name)}
-                    className={`w-full ${tier.popular
+                    className={`w-full ${
+                      tier.popular
                         ? "bg-neon-magenta text-background hover:bg-neon-magenta/90"
                         : "bg-primary hover:bg-secondary/80"
-                      }`}
+                    }`}
                   >
                     {tier.popular ? "Upgrade Now" : "Choose Plan"}
                   </Button>

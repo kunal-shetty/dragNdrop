@@ -1,6 +1,8 @@
+"use server"
+
 import { GoogleGenAI } from "@google/genai"
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
+const apiKey = process.env.GEMINI_API_KEY || ""
 const ai = new GoogleGenAI({ apiKey })
 
 export interface ChatMessage {
@@ -8,16 +10,13 @@ export interface ChatMessage {
   content: string
 }
 
-export async function generateChatResponse(
-  userPrompt: string,
-  contextMessages: ChatMessage[] = [],
-) {
+export async function generateChatResponse(userPrompt: string, contextMessages: ChatMessage[] = []) {
   try {
     if (!apiKey) {
       return {
         success: false,
         content: "",
-        error: "API Key missing. Please set NEXT_PUBLIC_GEMINI_API_KEY.",
+        error: "API Key missing. Please set GEMINI_API_KEY in server environment variables.",
       }
     }
 
@@ -26,13 +25,11 @@ export async function generateChatResponse(
     if (contextMessages.length > 0) {
       historyContext =
         "Previous conversation:\n" +
-        contextMessages
-          .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-          .join("\n") +
+        contextMessages.map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n") +
         "\n\n"
     }
 
-    const systemInstruction = `You are a helpful AI assistant for a Figma-style website builder application.
+    const systemInstruction = `You are a helpful AI assistant for BuildIt, a Figma-style website builder application.
 
 **Your role:**
 - Explain how to use the drag-and-drop editor features
@@ -52,6 +49,7 @@ export async function generateChatResponse(
 - Component locking (position, size, editing)
 - Custom component library
 - Export to HTML/CSS
+- Preview mode to view designs without UI panels
 
 **Keep responses:**
 - Concise (under 200 words)
@@ -77,7 +75,7 @@ User: ${userPrompt}
 Respond naturally and helpfully`
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // required for response.text support
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         temperature: 0.7,
@@ -88,7 +86,6 @@ Respond naturally and helpfully`
       success: true,
       content: response.text || "I'm having trouble generating a response. Please try again.",
     }
-
   } catch (error) {
     console.error("Chat error:", error)
     return {
