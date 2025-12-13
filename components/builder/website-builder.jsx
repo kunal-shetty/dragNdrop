@@ -145,7 +145,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Reduced for more responsive feel
+        distance: 5,
       },
     }),
   )
@@ -177,7 +177,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
 
   const handleExport = useCallback(() => {
     if (!trackUsage()) {
-      setIsPremiumOpen(true) // Premium modal will be shown
+      setIsPremiumOpen(true)
       return
     }
     const html = exportToHTML(components)
@@ -296,16 +296,13 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const togglePreviewMode = () => {
     setPreviewMode(!previewMode)
     if (!previewMode) {
-      // Entering preview mode - collapse all panels
       setSidebarCollapsed(true)
       setInspectorCollapsed(true)
       setShowLayerPanel(false)
       setShowHistoryPanel(false)
     } else {
-      // Exiting preview mode - restore panels
       setSidebarCollapsed(false)
       setInspectorCollapsed(false)
-      setShowLayerPanel(true)
     }
   }
 
@@ -344,8 +341,11 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
         </Button>
 
         <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
-          {!previewMode && !sidebarCollapsed && (
+          {!previewMode && (
             <Sidebar
+              collapsed={sidebarCollapsed}
+              onCollapse={() => setSidebarCollapsed(true)}
+              onExpand={() => setSidebarCollapsed(false)}
               onUndo={undo}
               onRedo={redo}
               onClear={clearCanvas}
@@ -365,7 +365,6 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
               onToggleHistoryPanel={() => setShowHistoryPanel(!showHistoryPanel)}
               responsiveMode={responsiveMode}
               onResponsiveModeChange={setResponsiveMode}
-              onCollapse={() => setSidebarCollapsed(true)}
             />
           )}
 
@@ -391,7 +390,7 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           )}
 
           <div
-            className="flex-1 flex flex-col"
+            className="flex-1 flex flex-col min-w-0"
             style={{
               maxWidth: responsiveMode !== "desktop" ? getCanvasWidth() : undefined,
               margin: responsiveMode !== "desktop" ? "0 auto" : undefined,
@@ -495,7 +494,6 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           </span>
         </div>
 
-        {/* Premium Modal */}
         <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} />
 
         <AIChatbot />

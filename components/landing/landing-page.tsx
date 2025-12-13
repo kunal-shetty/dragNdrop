@@ -557,26 +557,46 @@ export function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-20 px-8 py-20 border-t border-border/30">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-semibold mb-4">
-            Ready to Build Something{" "}
+      <section className="relative z-20 px-8 py-24 border-t border-border/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neon-cyan/10 border border-neon-cyan/30 mb-6">
+            <Sparkles className="w-4 h-4 text-neon-cyan" />
+            <span className="text-sm text-neon-cyan">Ready to create?</span>
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Start Building Your{" "}
             <span className="text-neon-cyan" style={{ textShadow: `0 0 ${30 * settings.glowIntensity}px #22d3ee50` }}>
-              Amazing
+              Dream Website
             </span>
-            ?
           </h2>
-          <p className="text-muted-foreground mb-8">Join the future of web design. No coding required.</p>
-          <Link href="/editor">
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Join thousands of creators who build stunning websites without writing a single line of code. Drag, drop,
+            and publish in minutes.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/editor">
+              <Button
+                size="lg"
+                className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-10 h-14 text-lg font-medium min-w-[200px]"
+                style={{ boxShadow: `0 0 ${40 * settings.glowIntensity}px #22d3ee50` }}
+              >
+                Launch BuildIt
+                <Sparkles className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
             <Button
               size="lg"
-              className="bg-neon-cyan text-background hover:bg-neon-cyan/90 w-full h-12 text-base font-medium"
-              style={{ boxShadow: `0 0 ${30 * settings.glowIntensity}px #22d3ee40` }}
+              variant="outline"
+              className="border-border text-foreground hover:bg-secondary/50 px-10 h-14 text-lg bg-transparent min-w-[200px]"
             >
-              Launch BuildIt
-              <Sparkles className="w-4 h-4 ml-2" />
+              <Monitor className="w-5 h-5 mr-2" />
+              View Examples
             </Button>
-          </Link>
+          </div>
+
+          <p className="mt-8 text-sm text-muted-foreground">No credit card required. Free exports included.</p>
         </div>
       </section>
       <AlternatingBuilderCTA />

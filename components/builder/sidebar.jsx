@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Type,
   ImageIcon,
   LayoutGrid,
@@ -52,6 +53,8 @@ export function Sidebar({
   showHistoryPanel,
   onToggleHistoryPanel,
   onCollapse,
+  collapsed,
+  onExpand,
 }) {
   const [openCategories, setOpenCategories] = useState(["basic", "sections", "custom"])
 
@@ -66,8 +69,31 @@ export function Sidebar({
     components: defaultComponents.filter((c) => c.category === category.id),
   }))
 
+  if (collapsed) {
+    return (
+      <div
+        className="w-12 h-full bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 cursor-pointer hover:bg-secondary/30 transition-colors flex-shrink-0"
+        onClick={onExpand}
+      >
+        <ChevronRight className="w-4 h-4 text-neon-cyan mb-4" />
+        <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 flex items-center justify-center mb-4">
+          <Sparkles className="w-4 h-4 text-neon-cyan" />
+        </div>
+        <div className="flex-1 flex items-center">
+          <span
+            className="text-xs text-muted-foreground font-medium tracking-wider"
+            style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+          >
+            COMPONENTS
+          </span>
+        </div>
+        <Layers className="w-4 h-4 text-muted-foreground mt-4" />
+      </div>
+    )
+  }
+
   return (
-    <div className="w-56 h-full bg-sidebar border-r border-sidebar-border flex flex-col relative">
+    <div className="w-64 h-full bg-sidebar border-r border-sidebar-border flex flex-col relative flex-shrink-0">
       <Button
         variant="ghost"
         size="icon"

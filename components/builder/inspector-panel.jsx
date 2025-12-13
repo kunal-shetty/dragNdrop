@@ -46,6 +46,7 @@ import {
   Layers,
   ArrowUp,
   ArrowDown,
+  ImageIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -217,7 +218,7 @@ export function InspectorPanel({
     if (component && activeTab === "json") {
       updateJSON()
     }
-  }, [component, activeTab]) // Changed dependency array to include component itself
+  }, [component, activeTab])
 
   const updateJSON = () => {
     if (component) {
@@ -248,84 +249,94 @@ export function InspectorPanel({
   if (collapsed) {
     return (
       <div
-        className="w-10 h-full bg-sidebar border-l border-sidebar-border flex flex-col items-center py-4 cursor-pointer hover:bg-secondary/30 transition-colors"
+        className="w-12 h-full bg-sidebar border-l border-sidebar-border flex flex-col items-center py-4 cursor-pointer hover:bg-secondary/30 transition-colors flex-shrink-0"
         onClick={onToggleCollapse}
       >
-        <ChevronLeft className="w-4 h-4 text-neon-cyan mb-2" />
-        <div className="writing-mode-vertical text-xs text-muted-foreground font-medium tracking-wider">INSPECTOR</div>
+        <ChevronLeft className="w-4 h-4 text-neon-cyan mb-4" />
+        <div className="flex-1 flex items-center">
+          <span
+            className="text-xs text-muted-foreground font-medium tracking-wider"
+            style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+          >
+            INSPECTOR
+          </span>
+        </div>
+        <Settings2 className="w-4 h-4 text-muted-foreground mt-4" />
       </div>
     )
   }
 
   if (!component) {
     return (
-      <div className="w-80 h-full bg-sidebar border-l border-sidebar-border p-4 relative">
-        <Button variant="ghost" size="icon" className="absolute top-2 left-2 w-6 h-6" onClick={onToggleCollapse}>
+      <div className="w-96 h-full bg-sidebar border-l border-sidebar-border flex flex-col relative flex-shrink-0">
+        <Button variant="ghost" size="icon" className="absolute top-2 left-2 w-6 h-6 z-10" onClick={onToggleCollapse}>
           <ChevronRight className="w-4 h-4" />
         </Button>
-        <div className="flex items-center gap-2 text-muted-foreground mb-4 mt-6">
-          <Settings2 className="w-4 h-4 text-neon-cyan" />
-          <span className="text-sm font-medium">Inspector</span>
-        </div>
-        <p className="text-sm text-muted-foreground">Select a component to edit its properties.</p>
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex items-center gap-2 text-muted-foreground mb-4 mt-6">
+            <Settings2 className="w-4 h-4 text-neon-cyan" />
+            <span className="text-sm font-medium">Inspector</span>
+          </div>
+          <p className="text-sm text-muted-foreground">Select a component to edit its properties.</p>
 
-        <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
-          <h4 className="text-xs font-medium text-neon-cyan mb-3">Keyboard Shortcuts</h4>
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+C</kbd>
-              </span>
-              <span>Copy</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+V</kbd>
-              </span>
-              <span>Paste</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+D</kbd>
-              </span>
-              <span>Duplicate</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+Z</kbd>
-              </span>
-              <span>Undo</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Del</kbd>
-              </span>
-              <span>Remove</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Arrow</kbd>
-              </span>
-              <span>Move 1px</span>
-            </div>
-            <div className="flex justify-between">
-              <span>
-                <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Shift+Arrow</kbd>
-              </span>
-              <span>Move 10px</span>
+          <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
+            <h4 className="text-xs font-medium text-neon-cyan mb-3">Keyboard Shortcuts</h4>
+            <div className="space-y-2 text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+C</kbd>
+                </span>
+                <span>Copy</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+V</kbd>
+                </span>
+                <span>Paste</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+D</kbd>
+                </span>
+                <span>Duplicate</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Ctrl+Z</kbd>
+                </span>
+                <span>Undo</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Del</kbd>
+                </span>
+                <span>Remove</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Arrow</kbd>
+                </span>
+                <span>Move 1px</span>
+              </div>
+              <div className="flex justify-between">
+                <span>
+                  <kbd className="px-1.5 py-0.5 bg-secondary rounded text-[10px]">Shift+Arrow</kbd>
+                </span>
+                <span>Move 10px</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4 p-4 rounded-lg bg-secondary/30 border border-border">
-          <h4 className="text-xs font-medium text-neon-magenta mb-3">Canvas Settings</h4>
-          <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">Snap to Grid</Label>
-            <Switch
-              checked={snappingEnabled}
-              onCheckedChange={onToggleSnapping}
-              className="data-[state=checked]:bg-neon-cyan"
-            />
+          <div className="mt-4 p-4 rounded-lg bg-secondary/30 border border-border">
+            <h4 className="text-xs font-medium text-neon-magenta mb-3">Canvas Settings</h4>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground">Snap to Grid</Label>
+              <Switch
+                checked={snappingEnabled}
+                onCheckedChange={onToggleSnapping}
+                className="data-[state=checked]:bg-neon-cyan"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -333,12 +344,12 @@ export function InspectorPanel({
   }
 
   return (
-    <div className="w-80 h-full bg-sidebar border-l border-sidebar-border flex flex-col relative">
+    <div className="w-96 h-full bg-sidebar border-l border-sidebar-border flex flex-col relative flex-shrink-0">
       <Button variant="ghost" size="icon" className="absolute top-2 left-2 w-6 h-6 z-10" onClick={onToggleCollapse}>
         <ChevronRight className="w-4 h-4" />
       </Button>
 
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border flex-shrink-0">
         <div className="flex items-center gap-2 mb-2 ml-6">
           <Settings2 className="w-4 h-4 text-neon-cyan" />
           <span className="text-sm font-medium text-foreground">Inspector</span>
@@ -348,7 +359,6 @@ export function InspectorPanel({
             <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
             {component.layerName || component.type}
           </p>
-          {/* Lock indicators */}
           <div className="flex gap-1">
             {component.locked?.position && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-neon-magenta/20 text-neon-magenta flex items-center gap-1">
@@ -369,19 +379,19 @@ export function InspectorPanel({
         </div>
       </div>
 
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-3 flex-shrink-0">
         <QuickActions
           component={component}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
+          onDuplicate={() => onDuplicate(component.id)}
+          onDelete={() => onDelete(component.id)}
           onToggleLock={onToggleLock}
-          onBringForward={onBringForward}
-          onSendBackward={onSendBackward}
+          onBringForward={() => onBringForward(component.id)}
+          onSendBackward={() => onSendBackward(component.id)}
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="mx-3 bg-secondary/50 h-8 grid grid-cols-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <TabsList className="mx-3 bg-secondary/50 h-8 grid grid-cols-4 flex-shrink-0">
           <TabsTrigger
             value="style"
             className="text-xs data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-neon-cyan"
@@ -412,9 +422,9 @@ export function InspectorPanel({
           </TabsTrigger>
         </TabsList>
 
-        <div className="flex-1 overflow-y-auto p-3">
+        <div className="flex-1 overflow-y-auto p-3 min-h-0">
           {/* Style Tab */}
-          <TabsContent value="style" className="mt-0 space-y-4">
+          <TabsContent value="style" className="mt-0 space-y-4 m-0">
             <LivePreview component={component} />
 
             {/* Content editing based on type */}
@@ -489,16 +499,21 @@ export function InspectorPanel({
             )}
 
             {(component.type === "image" || component.type === "imageCard") && (
-              <>
+              <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <ImageIcon className="w-3 h-3" />
+                  Image Settings
+                </div>
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Image URL</Label>
                   <Input
-                    value={component.props.src || component.props.imageSrc}
+                    value={component.props.src || component.props.imageSrc || ""}
                     onChange={(e) =>
                       onUpdateProps({
                         [component.type === "imageCard" ? "imageSrc" : "src"]: e.target.value,
                       })
                     }
+                    placeholder="https://example.com/image.jpg"
                     className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
                     disabled={component.locked?.editing}
                   />
@@ -507,14 +522,32 @@ export function InspectorPanel({
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Alt Text</Label>
                     <Input
-                      value={component.props.alt}
+                      value={component.props.alt || ""}
                       onChange={(e) => onUpdateProps({ alt: e.target.value })}
+                      placeholder="Describe the image"
                       className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
                       disabled={component.locked?.editing}
                     />
                   </div>
                 )}
-              </>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">Object Fit</Label>
+                  <Select
+                    value={component.props.objectFit || "cover"}
+                    onValueChange={(value) => onUpdateProps({ objectFit: value })}
+                  >
+                    <SelectTrigger className="h-8 bg-secondary/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cover">Cover</SelectItem>
+                      <SelectItem value="contain">Contain</SelectItem>
+                      <SelectItem value="fill">Fill</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             )}
 
             {component.type === "video" && (
@@ -544,11 +577,11 @@ export function InspectorPanel({
                     <DialogHeader>
                       <DialogTitle>Select Icon</DialogTitle>
                     </DialogHeader>
-                    <div className="grid grid-cols-6 gap-2 p-2">
+                    <div className="grid grid-cols-6 gap-2 p-4">
                       {ICON_OPTIONS.map(({ name, icon: Icon }) => (
                         <Button
                           key={name}
-                          variant={component.props.iconName === name ? "default" : "outline"}
+                          variant={component.props.iconName === name ? "default" : "ghost"}
                           size="icon"
                           className="h-10 w-10"
                           onClick={() => {
@@ -562,564 +595,335 @@ export function InspectorPanel({
                     </div>
                   </DialogContent>
                 </Dialog>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Size</Label>
-                  <Slider
-                    value={[component.props.iconSize || 24]}
-                    onValueChange={([value]) => onUpdateProps({ iconSize: value })}
-                    min={16}
-                    max={64}
-                    step={4}
-                    disabled={component.locked?.editing}
-                  />
-                </div>
               </div>
-            )}
-
-            {component.type === "navbar" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Logo Text</Label>
-                  <Input
-                    value={component.props.logo}
-                    onChange={(e) => onUpdateProps({ logo: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">CTA Button Text</Label>
-                  <Input
-                    value={component.props.ctaText}
-                    onChange={(e) => onUpdateProps({ ctaText: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              </>
-            )}
-
-            {component.type === "hero" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Headline</Label>
-                  <Textarea
-                    value={component.props.headline}
-                    onChange={(e) => onUpdateProps({ headline: e.target.value })}
-                    className="min-h-16 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Subheadline</Label>
-                  <Textarea
-                    value={component.props.subheadline}
-                    onChange={(e) => onUpdateProps({ subheadline: e.target.value })}
-                    className="min-h-16 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Primary CTA</Label>
-                    <Input
-                      value={component.props.primaryCta}
-                      onChange={(e) => onUpdateProps({ primaryCta: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Secondary CTA</Label>
-                    <Input
-                      value={component.props.secondaryCta}
-                      onChange={(e) => onUpdateProps({ secondaryCta: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {component.type === "testimonial" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Quote</Label>
-                  <Textarea
-                    value={component.props.quote}
-                    onChange={(e) => onUpdateProps({ quote: e.target.value })}
-                    className="min-h-20 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Author</Label>
-                    <Input
-                      value={component.props.author}
-                      onChange={(e) => onUpdateProps({ author: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Role</Label>
-                    <Input
-                      value={component.props.role}
-                      onChange={(e) => onUpdateProps({ role: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Rating (1-5)</Label>
-                  <Slider
-                    value={[component.props.rating || 5]}
-                    onValueChange={([value]) => onUpdateProps({ rating: value })}
-                    min={1}
-                    max={5}
-                    step={1}
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              </>
-            )}
-
-            {component.type === "section" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Title</Label>
-                  <Input
-                    value={component.props.title}
-                    onChange={(e) => onUpdateProps({ title: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Subtitle</Label>
-                  <Textarea
-                    value={component.props.subtitle}
-                    onChange={(e) => onUpdateProps({ subtitle: e.target.value })}
-                    className="min-h-16 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              </>
-            )}
-
-            {component.type === "pricing" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Plan Name</Label>
-                  <Input
-                    value={component.props.planName}
-                    onChange={(e) => onUpdateProps({ planName: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Price</Label>
-                    <Input
-                      value={component.props.price}
-                      onChange={(e) => onUpdateProps({ price: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Period</Label>
-                    <Input
-                      value={component.props.period}
-                      onChange={(e) => onUpdateProps({ period: e.target.value })}
-                      className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground">Featured</Label>
-                  <Switch
-                    checked={component.props.featured}
-                    onCheckedChange={(checked) => onUpdateProps({ featured: checked })}
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              </>
-            )}
-
-            {component.type === "footer" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Company Name</Label>
-                  <Input
-                    value={component.props.companyName}
-                    onChange={(e) => onUpdateProps({ companyName: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Tagline</Label>
-                  <Input
-                    value={component.props.tagline}
-                    onChange={(e) => onUpdateProps({ tagline: e.target.value })}
-                    className="h-8 text-sm bg-secondary/50 border-border focus:border-neon-cyan"
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              </>
             )}
 
             {/* Colors Section */}
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Palette className="w-3 h-3" /> Colors
-              </h4>
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Palette className="w-3 h-3" />
+                Colors
+              </div>
 
-              {component.props.color !== undefined && (
-                <div className="space-y-2 mb-3">
-                  <Label className="text-xs text-muted-foreground">Text Color</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={component.props.color}
-                      onChange={(e) => onUpdateProps({ color: e.target.value })}
-                      className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
-                      disabled={component.locked?.editing}
-                    />
-                    <Input
-                      value={component.props.color}
-                      onChange={(e) => onUpdateProps({ color: e.target.value })}
-                      className="h-8 text-xs flex-1 bg-secondary/50 border-border"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {component.props.backgroundColor !== undefined && (
-                <div className="space-y-2 mb-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Background</Label>
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       type="color"
-                      value={component.props.backgroundColor}
+                      value={component.props.backgroundColor || "#1a1a2e"}
                       onChange={(e) => onUpdateProps({ backgroundColor: e.target.value })}
-                      className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
-                      disabled={component.locked?.editing}
+                      className="w-10 h-8 p-1 bg-secondary/50 border-border cursor-pointer"
                     />
                     <Input
-                      value={component.props.backgroundColor}
+                      value={component.props.backgroundColor || "#1a1a2e"}
                       onChange={(e) => onUpdateProps({ backgroundColor: e.target.value })}
-                      className="h-8 text-xs flex-1 bg-secondary/50 border-border"
-                      disabled={component.locked?.editing}
+                      className="flex-1 h-8 text-xs bg-secondary/50 border-border font-mono"
                     />
                   </div>
                 </div>
-              )}
-
-              {component.props.accentColor !== undefined && (
-                <div className="space-y-2 mb-3">
-                  <Label className="text-xs text-muted-foreground">Accent Color</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Text Color</Label>
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       type="color"
-                      value={component.props.accentColor}
-                      onChange={(e) => onUpdateProps({ accentColor: e.target.value })}
-                      className="w-8 h-8 rounded cursor-pointer bg-transparent border-0"
-                      disabled={component.locked?.editing}
+                      value={component.props.color || "#ffffff"}
+                      onChange={(e) => onUpdateProps({ color: e.target.value })}
+                      className="w-10 h-8 p-1 bg-secondary/50 border-border cursor-pointer"
                     />
                     <Input
-                      value={component.props.accentColor}
-                      onChange={(e) => onUpdateProps({ accentColor: e.target.value })}
-                      className="h-8 text-xs flex-1 bg-secondary/50 border-border"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Typography for text-based components */}
-            {(component.type === "text" ||
-              component.type === "heading" ||
-              component.type === "paragraph" ||
-              component.type === "button") && (
-              <div className="pt-3 border-t border-border">
-                <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                  <Type className="w-3 h-3" /> Typography
-                </h4>
-
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Font Size</Label>
-                    <Input
-                      type="number"
-                      value={component.props.fontSize}
-                      onChange={(e) => onUpdateProps({ fontSize: Number.parseInt(e.target.value) || 16 })}
-                      className="h-8 text-sm bg-secondary/50 border-border"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Font Weight</Label>
-                    <Select
-                      value={String(component.props.fontWeight)}
-                      onValueChange={(value) => onUpdateProps({ fontWeight: value })}
-                      disabled={component.locked?.editing}
-                    >
-                      <SelectTrigger className="h-8 text-sm bg-secondary/50 border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="semibold">Semibold</SelectItem>
-                        <SelectItem value="bold">Bold</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-3">
-                  <Label className="text-xs text-muted-foreground">Text Align</Label>
-                  <Select
-                    value={component.props.textAlign || "left"}
-                    onValueChange={(value) => onUpdateProps({ textAlign: value })}
-                    disabled={component.locked?.editing}
-                  >
-                    <SelectTrigger className="h-8 text-sm bg-secondary/50 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="center">Center</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Letter Spacing</Label>
-                    <Input
-                      type="number"
-                      value={component.props.letterSpacing || 0}
-                      onChange={(e) => onUpdateProps({ letterSpacing: Number.parseFloat(e.target.value) || 0 })}
-                      className="h-8 text-sm bg-secondary/50 border-border"
-                      step="0.5"
-                      disabled={component.locked?.editing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Line Height</Label>
-                    <Input
-                      type="number"
-                      value={component.props.lineHeight || 1.5}
-                      onChange={(e) => onUpdateProps({ lineHeight: Number.parseFloat(e.target.value) || 1.5 })}
-                      className="h-8 text-sm bg-secondary/50 border-border"
-                      step="0.1"
-                      disabled={component.locked?.editing}
+                      value={component.props.color || "#ffffff"}
+                      onChange={(e) => onUpdateProps({ color: e.target.value })}
+                      className="flex-1 h-8 text-xs bg-secondary/50 border-border font-mono"
                     />
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Border & Effects */}
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Sparkles className="w-3 h-3" /> Effects
-              </h4>
-
-              {component.props.borderRadius !== undefined && (
-                <div className="space-y-2 mb-3">
-                  <Label className="text-xs text-muted-foreground">Border Radius</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Border Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={component.props.borderColor || "#333333"}
+                      onChange={(e) => onUpdateProps({ borderColor: e.target.value })}
+                      className="w-10 h-8 p-1 bg-secondary/50 border-border cursor-pointer"
+                    />
+                    <Input
+                      value={component.props.borderColor || "#333333"}
+                      onChange={(e) => onUpdateProps({ borderColor: e.target.value })}
+                      className="flex-1 h-8 text-xs bg-secondary/50 border-border font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Border Width</Label>
                   <Input
-                    value={component.props.borderRadius}
-                    onChange={(e) => onUpdateProps({ borderRadius: e.target.value })}
-                    placeholder="8px or 50%"
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={component.props.borderWidth || 0}
+                    onChange={(e) => onUpdateProps({ borderWidth: Number.parseInt(e.target.value) || 0 })}
                     className="h-8 text-sm bg-secondary/50 border-border"
-                    disabled={component.locked?.editing}
                   />
                 </div>
-              )}
-
-              {component.props.opacity !== undefined && (
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between">
-                    <Label className="text-xs text-muted-foreground">Opacity</Label>
-                    <span className="text-xs text-neon-cyan">{Math.round((component.props.opacity || 1) * 100)}%</span>
-                  </div>
-                  <Slider
-                    value={[component.props.opacity || 1]}
-                    onValueChange={([value]) => onUpdateProps({ opacity: value })}
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              )}
-
-              {component.props.glowIntensity !== undefined && (
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label className="text-xs text-muted-foreground">Glow Intensity</Label>
-                    <span className="text-xs text-neon-magenta">
-                      {Math.round((component.props.glowIntensity || 0) * 100)}%
-                    </span>
-                  </div>
-                  <Slider
-                    value={[component.props.glowIntensity || 0]}
-                    onValueChange={([value]) => onUpdateProps({ glowIntensity: value })}
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    disabled={component.locked?.editing}
-                  />
-                </div>
-              )}
+              </div>
             </div>
 
-            {/* Save as Custom Component */}
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Save className="w-3 h-3" /> Save as Template
-              </h4>
+            {/* Typography */}
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Type className="w-3 h-3" />
+                Typography
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Font Size</Label>
+                  <Input
+                    value={component.props.fontSize || "16px"}
+                    onChange={(e) => onUpdateProps({ fontSize: e.target.value })}
+                    placeholder="16px"
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Font Weight</Label>
+                  <Select
+                    value={component.props.fontWeight || "400"}
+                    onValueChange={(value) => onUpdateProps({ fontWeight: value })}
+                  >
+                    <SelectTrigger className="h-8 bg-secondary/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="300">Light</SelectItem>
+                      <SelectItem value="400">Regular</SelectItem>
+                      <SelectItem value="500">Medium</SelectItem>
+                      <SelectItem value="600">Semibold</SelectItem>
+                      <SelectItem value="700">Bold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Text Align</Label>
+                <Select
+                  value={component.props.textAlign || "left"}
+                  onValueChange={(value) => onUpdateProps({ textAlign: value })}
+                >
+                  <SelectTrigger className="h-8 bg-secondary/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">Left</SelectItem>
+                    <SelectItem value="center">Center</SelectItem>
+                    <SelectItem value="right">Right</SelectItem>
+                    <SelectItem value="justify">Justify</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Effects */}
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Sparkles className="w-3 h-3" />
+                Effects
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs text-muted-foreground">Opacity</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {Math.round((component.props.opacity || 1) * 100)}%
+                  </span>
+                </div>
+                <Slider
+                  value={[(component.props.opacity || 1) * 100]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={([value]) => onUpdateProps({ opacity: value / 100 })}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Border Radius</Label>
+                <Input
+                  value={component.props.borderRadius || "0px"}
+                  onChange={(e) => onUpdateProps({ borderRadius: e.target.value })}
+                  placeholder="8px"
+                  className="h-8 text-sm bg-secondary/50 border-border"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Box Shadow</Label>
+                <Input
+                  value={component.props.boxShadow || ""}
+                  onChange={(e) => onUpdateProps({ boxShadow: e.target.value })}
+                  placeholder="0 4px 6px rgba(0,0,0,0.1)"
+                  className="h-8 text-sm bg-secondary/50 border-border"
+                />
+              </div>
+            </div>
+
+            {/* Save as Custom */}
+            <div className="p-3 bg-secondary/20 rounded-lg border border-border space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Save className="w-3 h-3" />
+                Save as Custom Component
+              </div>
               <div className="flex gap-2">
                 <Input
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="Template name..."
-                  className="h-8 text-sm bg-secondary/50 border-border flex-1"
+                  placeholder="Component name"
+                  className="h-8 text-sm bg-secondary/50 border-border"
                 />
                 <Button
                   size="sm"
                   onClick={() => {
                     if (customName.trim()) {
-                      onSaveAsCustom(customName.trim())
+                      onSaveAsCustom(customName)
                       setCustomName("")
                     }
                   }}
-                  className="h-8 bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30"
+                  disabled={!customName.trim()}
+                  className="h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90"
                 >
-                  <Save className="w-3 h-3" />
+                  Save
                 </Button>
               </div>
             </div>
           </TabsContent>
 
           {/* Layout Tab */}
-          <TabsContent value="layout" className="mt-0 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">X Position</Label>
-                <Input
-                  type="number"
-                  value={Math.round(component.position.x)}
-                  onChange={(e) =>
-                    onUpdateComponent({ position: { ...component.position, x: Number.parseInt(e.target.value) || 0 } })
-                  }
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                  disabled={component.locked?.position}
-                />
+          <TabsContent value="layout" className="mt-0 space-y-4 m-0">
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Move className="w-3 h-3" />
+                Position
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Y Position</Label>
-                <Input
-                  type="number"
-                  value={Math.round(component.position.y)}
-                  onChange={(e) =>
-                    onUpdateComponent({ position: { ...component.position, y: Number.parseInt(e.target.value) || 0 } })
-                  }
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                  disabled={component.locked?.position}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  type="number"
-                  value={Math.round(component.size.width)}
-                  onChange={(e) =>
-                    onUpdateComponent({ size: { ...component.size, width: Number.parseInt(e.target.value) || 100 } })
-                  }
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                  disabled={component.locked?.size}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Height</Label>
-                <Input
-                  type="number"
-                  value={Math.round(component.size.height)}
-                  onChange={(e) =>
-                    onUpdateComponent({ size: { ...component.size, height: Number.parseInt(e.target.value) || 50 } })
-                  }
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                  disabled={component.locked?.size}
-                />
-              </div>
-            </div>
-
-            {component.props.padding !== undefined && (
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Padding</Label>
-                <Slider
-                  value={[component.props.padding]}
-                  onValueChange={([value]) => onUpdateProps({ padding: value })}
-                  min={0}
-                  max={64}
-                  step={4}
-                  disabled={component.locked?.editing}
-                />
-                <div className="text-xs text-right text-muted-foreground">{component.props.padding}px</div>
-              </div>
-            )}
-
-            {/* Z-Index controls */}
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Layers className="w-3 h-3" /> Layer Order
-              </h4>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Z-Index</Label>
-                <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">X</Label>
                   <Input
                     type="number"
-                    value={component.zIndex || 0}
-                    onChange={(e) => onUpdateComponent({ zIndex: Number.parseInt(e.target.value) || 0 })}
-                    className="h-8 text-sm bg-secondary/50 border-border flex-1"
+                    value={Math.round(component.position?.x || 0)}
+                    onChange={(e) =>
+                      onUpdateComponent({
+                        position: { ...component.position, x: Number.parseInt(e.target.value) || 0 },
+                      })
+                    }
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                    disabled={component.locked?.position}
                   />
-                  <Button size="sm" variant="outline" className="h-8 bg-transparent" onClick={onBringForward}>
-                    <ArrowUp className="w-3 h-3" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-8 bg-transparent" onClick={onSendBackward}>
-                    <ArrowDown className="w-3 h-3" />
-                  </Button>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Y</Label>
+                  <Input
+                    type="number"
+                    value={Math.round(component.position?.y || 0)}
+                    onChange={(e) =>
+                      onUpdateComponent({
+                        position: { ...component.position, y: Number.parseInt(e.target.value) || 0 },
+                      })
+                    }
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                    disabled={component.locked?.position}
+                  />
                 </div>
               </div>
             </div>
 
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Maximize2 className="w-3 h-3" />
+                Size
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Width</Label>
+                  <Input
+                    type="number"
+                    value={Math.round(component.size?.width || 100)}
+                    onChange={(e) =>
+                      onUpdateComponent({ size: { ...component.size, width: Number.parseInt(e.target.value) || 100 } })
+                    }
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                    disabled={component.locked?.size}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Height</Label>
+                  <Input
+                    type="number"
+                    value={Math.round(component.size?.height || 40)}
+                    onChange={(e) =>
+                      onUpdateComponent({ size: { ...component.size, height: Number.parseInt(e.target.value) || 40 } })
+                    }
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                    disabled={component.locked?.size}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Layout className="w-3 h-3" />
+                Padding
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Horizontal</Label>
+                  <Input
+                    value={component.props.paddingX || "16px"}
+                    onChange={(e) => onUpdateProps({ paddingX: e.target.value })}
+                    placeholder="16px"
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Vertical</Label>
+                  <Input
+                    value={component.props.paddingY || "8px"}
+                    onChange={(e) => onUpdateProps({ paddingY: e.target.value })}
+                    placeholder="8px"
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">All Sides</Label>
+                <Input
+                  value={component.props.padding || ""}
+                  onChange={(e) => onUpdateProps({ padding: e.target.value })}
+                  placeholder="16px or 8px 16px"
+                  className="h-8 text-sm bg-secondary/50 border-border"
+                />
+              </div>
+            </div>
+
             {/* Lock Controls */}
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Lock className="w-3 h-3" /> Lock Controls
-              </h4>
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Lock className="w-3 h-3" />
+                Lock Controls
+              </div>
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                    <Move className="w-3 h-3" /> Position
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">Lock Position</Label>
                   <Switch
                     checked={component.locked?.position || false}
                     onCheckedChange={() => onToggleLock("position")}
@@ -1127,9 +931,7 @@ export function InspectorPanel({
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                    <Maximize2 className="w-3 h-3" /> Size
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">Lock Size</Label>
                   <Switch
                     checked={component.locked?.size || false}
                     onCheckedChange={() => onToggleLock("size")}
@@ -1137,9 +939,7 @@ export function InspectorPanel({
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground flex items-center gap-2">
-                    <Edit3 className="w-3 h-3" /> Editing
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">Lock Editing</Label>
                   <Switch
                     checked={component.locked?.editing || false}
                     onCheckedChange={() => onToggleLock("editing")}
@@ -1151,102 +951,89 @@ export function InspectorPanel({
           </TabsContent>
 
           {/* Transform Tab */}
-          <TabsContent value="transform" className="mt-0 space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label className="text-xs text-muted-foreground">Rotation</Label>
-                <span className="text-xs text-neon-cyan">{component.transform?.rotate || 0}°</span>
+          <TabsContent value="transform" className="mt-0 space-y-4 m-0">
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <RotateCw className="w-3 h-3" />
+                Rotation
               </div>
-              <Slider
-                value={[component.transform?.rotate || 0]}
-                onValueChange={([value]) => onUpdateComponent({ transform: { ...component.transform, rotate: value } })}
-                min={-180}
-                max={180}
-                step={1}
-              />
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label className="text-xs text-muted-foreground">Scale X</Label>
-                  <span className="text-xs text-neon-cyan">{(component.transform?.scaleX || 1).toFixed(2)}</span>
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs text-muted-foreground">Angle</Label>
+                  <span className="text-xs text-muted-foreground">{component.transform?.rotate || 0}°</span>
                 </div>
                 <Slider
-                  value={[component.transform?.scaleX || 1]}
-                  onValueChange={([value]) =>
-                    onUpdateComponent({ transform: { ...component.transform, scaleX: value } })
-                  }
-                  min={0.1}
-                  max={3}
-                  step={0.1}
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label className="text-xs text-muted-foreground">Scale Y</Label>
-                  <span className="text-xs text-neon-cyan">{(component.transform?.scaleY || 1).toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={[component.transform?.scaleY || 1]}
-                  onValueChange={([value]) =>
-                    onUpdateComponent({ transform: { ...component.transform, scaleY: value } })
-                  }
-                  min={0.1}
-                  max={3}
-                  step={0.1}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label className="text-xs text-muted-foreground">Skew X</Label>
-                  <span className="text-xs text-neon-magenta">{component.transform?.skewX || 0}°</span>
-                </div>
-                <Slider
-                  value={[component.transform?.skewX || 0]}
-                  onValueChange={([value]) =>
-                    onUpdateComponent({ transform: { ...component.transform, skewX: value } })
-                  }
-                  min={-45}
-                  max={45}
+                  value={[component.transform?.rotate || 0]}
+                  min={-180}
+                  max={180}
                   step={1}
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label className="text-xs text-muted-foreground">Skew Y</Label>
-                  <span className="text-xs text-neon-magenta">{component.transform?.skewY || 0}°</span>
-                </div>
-                <Slider
-                  value={[component.transform?.skewY || 0]}
                   onValueChange={([value]) =>
-                    onUpdateComponent({ transform: { ...component.transform, skewY: value } })
+                    onUpdateComponent({ transform: { ...component.transform, rotate: value } })
                   }
-                  min={-45}
-                  max={45}
-                  step={1}
+                  className="w-full"
                 />
               </div>
             </div>
 
-            <div className="pt-3 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground mb-3">Flip</h4>
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Maximize2 className="w-3 h-3" />
+                Scale
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs text-muted-foreground">X</Label>
+                    <span className="text-xs text-muted-foreground">{component.transform?.scaleX || 1}</span>
+                  </div>
+                  <Slider
+                    value={[(component.transform?.scaleX || 1) * 100]}
+                    min={10}
+                    max={200}
+                    step={1}
+                    onValueChange={([value]) =>
+                      onUpdateComponent({ transform: { ...component.transform, scaleX: value / 100 } })
+                    }
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs text-muted-foreground">Y</Label>
+                    <span className="text-xs text-muted-foreground">{component.transform?.scaleY || 1}</span>
+                  </div>
+                  <Slider
+                    value={[(component.transform?.scaleY || 1) * 100]}
+                    min={10}
+                    max={200}
+                    step={1}
+                    onValueChange={([value]) =>
+                      onUpdateComponent({ transform: { ...component.transform, scaleY: value / 100 } })
+                    }
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <FlipHorizontal className="w-3 h-3" />
+                Flip
+              </div>
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 h-8 bg-transparent"
                   onClick={() =>
                     onUpdateComponent({
-                      transform: {
-                        ...component.transform,
-                        scaleX: (component.transform?.scaleX || 1) * -1,
-                      },
+                      transform: { ...component.transform, scaleX: -(component.transform?.scaleX || 1) },
                     })
                   }
+                  className="flex-1 h-8 bg-secondary/50"
                 >
                   <FlipHorizontal className="w-4 h-4 mr-2" />
                   Horizontal
@@ -1254,15 +1041,12 @@ export function InspectorPanel({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 h-8 bg-transparent"
                   onClick={() =>
                     onUpdateComponent({
-                      transform: {
-                        ...component.transform,
-                        scaleY: (component.transform?.scaleY || 1) * -1,
-                      },
+                      transform: { ...component.transform, scaleY: -(component.transform?.scaleY || 1) },
                     })
                   }
+                  className="flex-1 h-8 bg-secondary/50"
                 >
                   <FlipVertical className="w-4 h-4 mr-2" />
                   Vertical
@@ -1270,46 +1054,87 @@ export function InspectorPanel({
               </div>
             </div>
 
-            <div className="pt-3 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full h-8 bg-transparent"
-                onClick={() =>
-                  onUpdateComponent({
-                    transform: { rotate: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 },
-                  })
-                }
-              >
-                <RotateCw className="w-4 h-4 mr-2" />
-                Reset Transform
-              </Button>
+            <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Layers className="w-3 h-3" />
+                Skew
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs text-muted-foreground">X</Label>
+                    <span className="text-xs text-muted-foreground">{component.transform?.skewX || 0}°</span>
+                  </div>
+                  <Slider
+                    value={[component.transform?.skewX || 0]}
+                    min={-45}
+                    max={45}
+                    step={1}
+                    onValueChange={([value]) =>
+                      onUpdateComponent({ transform: { ...component.transform, skewX: value } })
+                    }
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-xs text-muted-foreground">Y</Label>
+                    <span className="text-xs text-muted-foreground">{component.transform?.skewY || 0}°</span>
+                  </div>
+                  <Slider
+                    value={[component.transform?.skewY || 0]}
+                    min={-45}
+                    max={45}
+                    step={1}
+                    onValueChange={([value]) =>
+                      onUpdateComponent({ transform: { ...component.transform, skewY: value } })
+                    }
+                    className="w-full"
+                  />
+                </div>
+              </div>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onUpdateComponent({ transform: { rotate: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 } })}
+              className="w-full h-8 bg-secondary/50"
+            >
+              <RotateCw className="w-4 h-4 mr-2" />
+              Reset Transform
+            </Button>
           </TabsContent>
 
           {/* JSON Tab */}
-          <TabsContent value="json" className="mt-0 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">Component JSON</Label>
-              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={updateJSON}>
-                Refresh
-              </Button>
+          <TabsContent value="json" className="mt-0 space-y-4 m-0">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground flex items-center gap-2">
+                <Code className="w-3 h-3" />
+                Component JSON
+              </Label>
+              <Textarea
+                value={jsonValue}
+                onChange={(e) => setJsonValue(e.target.value)}
+                className="min-h-[300px] font-mono text-xs bg-secondary/50 border-border"
+                disabled={component.locked?.editing}
+              />
+              {jsonError && <p className="text-xs text-red-400">{jsonError}</p>}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={updateJSON} className="flex-1 h-8 bg-secondary/50">
+                  Reset
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={applyJSON}
+                  disabled={component.locked?.editing}
+                  className="flex-1 h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90"
+                >
+                  Apply Changes
+                </Button>
+              </div>
             </div>
-            <Textarea
-              value={jsonValue}
-              onChange={(e) => setJsonValue(e.target.value)}
-              className="min-h-[300px] font-mono text-xs bg-secondary/50 border-border"
-              placeholder="Click 'Refresh' to load component JSON..."
-            />
-            {jsonError && <p className="text-xs text-red-400">{jsonError}</p>}
-            <Button
-              size="sm"
-              className="w-full h-8 bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30"
-              onClick={applyJSON}
-            >
-              <Code className="w-3 h-3 mr-2" />
-              Apply Changes
-            </Button>
           </TabsContent>
         </div>
       </Tabs>
