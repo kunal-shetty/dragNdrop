@@ -89,30 +89,20 @@ export function LayerPanel({
 
   return (
     <div
-      className={`h-full bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 flex-shrink-0 ${collapsed ? "w-12" : "w-56"}`}
+      className={`h-full bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 flex-shrink-0 "w-56"`}
     >
       <div
         className="p-3 border-b border-sidebar-border flex items-center justify-between cursor-pointer hover:bg-secondary/30"
-        onClick={() => setCollapsed(!collapsed)}
       >
-        {collapsed ? (
-          <div className="flex flex-col items-center gap-1 mx-auto">
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            <div className="writing-mode-vertical text-xs text-muted-foreground font-medium tracking-wider">LAYERS</div>
-          </div>
-        ) : (
-          <>
+        
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-neon-cyan" />
               <span className="text-sm font-medium">Layers</span>
               <span className="text-xs text-muted-foreground">({components.length})</span>
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          </>
-        )}
       </div>
 
-      {!collapsed && (
+      {collapsed && (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Z-Index Controls */}
           {selectedId && (

@@ -111,7 +111,7 @@ export function Sidebar({
             <Sparkles className="w-4 h-4 text-neon-cyan" />
           </div>
           <span className="text-base font-semibold tracking-wide text-sidebar-foreground">
-            Build<span className="text-neon-cyan">It</span>
+            Build<span className="text-neon-cyan">IT</span>
           </span>
         </Link>
       </div>

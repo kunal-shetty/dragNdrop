@@ -19,7 +19,7 @@ import { generateId } from "@/lib/generate-id"
 import { AIChatbot } from "./ai-chatbot"
 import { OnboardingTour } from "./onboarding-tour"
 import { Button } from "@/components/ui/button"
-import { trackUsage, usageCount, limit } from "@/lib/usage-tracking"
+import { trackUsage, getUsageCount, limit } from "@/lib/usage-tracking"
 
 export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [docId] = useState(() => documentId || generateId())
@@ -142,6 +142,37 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
     }
   }, [selectedId])
 
+  const getCookie = (name) => {
+    if (typeof document === "undefined") return null
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(name + "="))
+      ?.split("=")[1] || null
+  }
+  const [usageCount, setUsageCount] = useState(0)
+
+  useEffect(() => {
+    setUsageCount(getUsageCount())
+  }, [])
+
+  const [userPlan, setUserPlan] = useState(null)
+  const [exportLimit, setExportLimit] = useState(5) // default free
+
+  useEffect(() => {
+    const planFromCookie = getCookie("BuildIT_unlocked")
+
+    if (planFromCookie === "basic") {
+      setUserPlan("basic")
+      setExportLimit(20)
+    } else if (planFromCookie === "pro" || planFromCookie === "lifetime") {
+      setUserPlan(planFromCookie)
+      setExportLimit(null) // unlimited
+    } else {
+      setExportLimit(5)
+    }
+  }, [])
+
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -176,13 +207,26 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   )
 
   const handleExport = useCallback(() => {
-    if (!trackUsage()) {
+    // Unlimited plans
+    if (exportLimit === null) {
+      const html = exportToHTML(components)
+      downloadHTML(html)
+      return
+    }
+
+    // Limited plans
+    const allowed = trackUsage(exportLimit)
+    if (!allowed) {
       setIsPremiumOpen(true)
       return
     }
+
+    // Update UI count
+    setUsageCount(getUsageCount())
+
     const html = exportToHTML(components)
     downloadHTML(html)
-  }, [components, trackUsage, setIsPremiumOpen])
+  }, [components, exportLimit])
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -331,10 +375,9 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
         ))}
 
         <Button
-          variant="outline"
           size="sm"
           onClick={togglePreviewMode}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-card/90 backdrop-blur-sm border-border gap-2"
+          className="fixed top-2 left-1/2 -translate-x-1/2 z-50 text-amber-50 bg-body hover:bg-body-secondary cursor-pointer backdrop-blur-sm border-border gap-2"
         >
           {previewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           {previewMode ? "Exit Preview" : "Preview Mode"}
@@ -405,8 +448,8 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
               snappingEnabled={snappingEnabled}
               snapGuides={snapGuides}
               physicsEnabled={physicsEnabled}
-              onSelect={previewMode ? () => {} : setSelectedId}
-              onMultiSelect={previewMode ? () => {} : setSelectedIds}
+              onSelect={previewMode ? () => { } : setSelectedId}
+              onMultiSelect={previewMode ? () => { } : setSelectedIds}
               onMove={(id, pos) => {
                 if (previewMode) return
                 moveComponent(id, pos)
@@ -477,7 +520,12 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
           )}
         </DndContext>
 
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs">
+        <div className="fixed z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur-sm border border-border text-xs"
+          style={{
+            bottom: 16,
+            // top: 20,
+            left: 280,
+          }}>
           {saveStatus === "saving" ? (
             <>
               <Save className="w-3 h-3 text-neon-cyan animate-pulse" />
@@ -490,8 +538,12 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
             </>
           )}
           <span className="ml-2 text-muted-foreground border-l border-border pl-2">
-            {usageCount > 5 ? 5 : usageCount}/{limit} exports
+            {exportLimit === null
+              ? "Unlimited exports"
+              : `${usageCount}/${exportLimit} exports`}
           </span>
+
+
         </div>
 
         <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} />

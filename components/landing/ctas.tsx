@@ -6,8 +6,8 @@ import { Sparkles } from "lucide-react"
 
 export default function AlternatingBuilderCTA() {
   const items = [
-    { text: "Resume Builder", href: "/resume-builder" },
-    { text: "Portfolio Builder", href: "/portfolio-builder" },
+    { text: "Resume Builder", href: "https://build-resume.online" },
+    { text: "Portfolio Builder", href: "https://complete-portfolio-builder.netlify.app" },
   ]
 
   const [index, setIndex] = useState(0)

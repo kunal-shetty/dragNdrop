@@ -3,14 +3,15 @@
 import { useState, useEffect } from "react"
 import { X, Zap, Crown, Infinity, Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getCookie } from "@/lib/usage-tracking"
 
-const USAGE_KEY = "buildit-usage"
+const USAGE_KEY = "BuildIT-usage"
 const DAILY_LIMIT = 5
 
 const pricingTiers = [
   {
     name: "Basic",
-    price: "$9",
+    price: "₹249",
     period: "month",
     icon: Zap,
     color: "neon-cyan",
@@ -19,7 +20,7 @@ const pricingTiers = [
   },
   {
     name: "Pro",
-    price: "$29",
+    price: "₹499",
     period: "month",
     icon: Crown,
     color: "neon-magenta",
@@ -28,7 +29,7 @@ const pricingTiers = [
   },
   {
     name: "Lifetime",
-    price: "$199",
+    price: "₹699",
     period: "one-time",
     icon: Infinity,
     color: "neon-purple",
@@ -47,6 +48,8 @@ const handlePlanClick = (planName) => {
   console.log("Selected plan:", planName)
   window.location.href = `/checkout?plan=${planName.toLowerCase()}`
 }
+
+const currentPlan = getCookie("BuildIT_unlocked") // "basic" | "pro" | "lifetime" | null
 
 export function usePremiumModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -89,6 +92,20 @@ export function usePremiumModal() {
   return { isOpen, setIsOpen, trackUsage, canExport, usageCount, limit: DAILY_LIMIT }
 }
 
+const visibleTiers = pricingTiers.filter((tier) => {
+  // If user already has Basic, hide Basic
+  if (currentPlan === "basic" && tier.name.toLowerCase() === "basic") {
+    return false
+  }
+
+  // If Lifetime, hide everything
+  if (currentPlan === "lifetime" || currentPlan === "pro") {
+    return false
+  }
+
+  return true
+})
+
 export function PremiumModal({ isOpen, onClose }) {
   if (!isOpen) return null
 
@@ -124,8 +141,12 @@ export function PremiumModal({ isOpen, onClose }) {
 
         {/* Pricing Cards */}
         <div className="p-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pricingTiers.map((tier) => {
+<div
+  className={`grid grid-cols-1 gap-6 ${
+    currentPlan === "basic" ? "md:grid-cols-2" : "md:grid-cols-3"
+  }`}
+>
+            {visibleTiers.map((tier) => {
               const Icon = tier.icon
               return (
                 <div
@@ -168,7 +189,7 @@ export function PremiumModal({ isOpen, onClose }) {
                     className={`w-full ${
                       tier.popular
                         ? "bg-neon-magenta text-background hover:bg-neon-magenta/90"
-                        : "bg-primary hover:bg-secondary/80"
+                        : `bg-${tier.color} hover:bg-${tier.color}/80`
                     }`}
                   >
                     {tier.popular ? "Upgrade Now" : "Choose Plan"}

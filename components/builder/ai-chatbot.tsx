@@ -17,6 +17,14 @@ export function AIChatbot() {
         "Hi! I'm your AI assistant for this website builder. Ask me anything about using the editor, components, keyboard shortcuts, or how to create amazing designs!",
     },
   ])
+  const quickQuestions = [
+  "How does export work?",
+  "What are the plan limits?",
+  "Why is this not available on mobile?",
+  "How do layers and z-index work?",
+  "What keyboard shortcuts are available?",
+]
+
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -95,7 +103,7 @@ export function AIChatbot() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-neon-cyan to-neon-purple hover:shadow-neon-cyan/50 transition-all duration-300 hover:scale-110"
+          className="fixed bottom-6 right-6 z-0 w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-neon-cyan to-neon-purple hover:shadow-neon-cyan/50 transition-all duration-300 hover:scale-110"
           size="icon"
         >
           <Sparkles className="w-6 h-6" />
@@ -128,6 +136,7 @@ export function AIChatbot() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
@@ -140,6 +149,30 @@ export function AIChatbot() {
                 </div>
               </div>
             ))}
+
+            {/* Quick Chat Suggestions */}
+<div className="px-0 py-2 border-b border-border bg-background/40">
+  <div className="flex flex-wrap gap-2">
+    {quickQuestions.map((q) => (
+      <button
+        key={q}
+        onClick={() => {
+          if (isLoading) return
+          setInput(q)
+          handleSend(q)
+        }}
+        className="text-xs px-3 py-1.5 rounded-full
+          bg-secondary/60 hover:bg-secondary
+          text-muted-foreground hover:text-foreground
+          transition-colors"
+      >
+        {q}
+      </button>
+    ))}
+  </div>
+</div>
+
+            
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-secondary/50 rounded-2xl px-4 py-2">

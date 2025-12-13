@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles, Layers, Zap, Palette, Code2 } from "lucide-react"
 
-export function AlternatingBuilderCTA() {
+export default function AlternatingBuilderCTA() {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null)
 
   const features = [
@@ -109,7 +109,7 @@ export function AlternatingBuilderCTA() {
           <div className="inline-flex flex-col items-center gap-4 p-8 rounded-2xl bg-gradient-to-br from-neon-cyan/10 via-neon-magenta/10 to-neon-purple/10 border border-neon-cyan/30">
             <h3 className="text-2xl font-semibold">Ready to Start Building?</h3>
             <p className="text-muted-foreground max-w-md">
-              Join thousands of creators who are already using BuildIt to bring their ideas to life.
+              Join thousands of creators who are already using BuildIT to bring their ideas to life.
             </p>
             <Link href="/editor">
               <Button
@@ -117,7 +117,7 @@ export function AlternatingBuilderCTA() {
                 className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-8 h-12 text-base font-medium group"
                 style={{ boxShadow: "0 0 30px #22d3ee40" }}
               >
-                Launch BuildIt
+                Launch BuildIT
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

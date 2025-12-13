@@ -1,33 +1,29 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { sendSuccessEmail } from "@/app/actions/sendSuccessEmail";
 
 const PLAN_PRICING: Record<string, number> = {
-  qT9mF3xL7vB2nP8kS1hD6wR0gC4tY9jM5uA2eZ7rV1cN8pH3lK6fW0dQ4sX9bT5yG2aU7mJ1Z8rK1pV6xT3gM9hS4lC2nW7fB0uJ5yD8qA1cL6tR3mH9vP4kF2wN7jE0sQ5gY8bU1xT6mC3: 49,
-  mP4tS9vB2qH7cL1xN6fD0wY5kR8pA3gT9uJ2eV6rC1hM7nF0dX4sW8jQ3yK5aG2bU9tL6paW7fC3gN9tM6yV1sK4pQ8lB2jT5hR0xD7uE3nF9vJ6cL1kS8mA4wP2rG5dH0qX9bU7tY3: 99,
-  xC1tL6pN8rJ3yH9bS5kW2uA7fQ4gM0nV6dR1cT8mP3jE9hF5lK2wB7sD4aY0qG8vX1nB5yF2uG8hK1vQ7pD3mT9aL4sP0cW6xE2rJ8tM1kS7gH3lC9wN5qA0jV4dU6bY8: 129,
-  R3vH9tP4mS1xL8uJ2cK6qG0yD5bN7gF3pT9lM1hC8wA2rV6eQ4nW0jU5sY7kX9kM2jS7aT4yC9nV5gP1bU8wR3xD6fH0pQ7lE2tJ9cN4mA8hG5rW1dY3sK6vX0: 59,
-  tF6wE1pH8lM3qG9uJ5rA2vK7cD0yS4bN8mR1xL6gP3nC9jT5hW2sQ7kU4V9kP4cM7xR2dT8bS1yG6nL0hF5uQ3mJ9rC4tW8pA1eH6sD2jN7gY5: 69,
+  "basic": 249,
+  "pro": 499,
+  "lifetime": 699
 }
 
-const planMap = {
-  qT9mF3xL7vB2nP8kS1hD6wR0gC4tY9jM5uA2eZ7rV1cN8pH3lK6fW0dQ4sX9bT5yG2aU7mJ1Z8rK1pV6xT3gM9hS4lC2nW7fB0uJ5yD8qA1cL6tR3mH9vP4kF2wN7jE0sQ5gY8bU1xT6mC3:
-    "Basic",
-  mP4tS9vB2qH7cL1xN6fD0wY5kR8pA3gT9uJ2eV6rC1hM7nF0dX4sW8jQ3yK5aG2bU9tL6paW7fC3gN9tM6yV1sK4pQ8lB2jT5hR0xD7uE3nF9vJ6cL1kS8mA4wP2rG5dH0qX9bU7tY3:
-    "Advanced",
-  xC1tL6pN8rJ3yH9bS5kW2uA7fQ4gM0nV6dR1cT8mP3jE9hF5lK2wB7sD4aY0qG8vX1nB5yF2uG8hK1vQ7pD3mT9aL4sP0cW6xE2rJ8tM1kS7gH3lC9wN5qA0jV4dU6bY8:
-    "Premium",
-  R3vH9tP4mS1xL8uJ2cK6qG0yD5bN7gF3pT9lM1hC8wA2rV6eQ4nW0jU5sY7kX9kM2jS7aT4yC9nV5gP1bU8wR3xD6fH0pQ7lE2tJ9cN4mA8hG5rW1dY3sK6vX0:
-    "Basic To Advanced",
-  tF6wE1pH8lM3qG9uJ5rA2vK7cD0yS4bN8mR1xL6gP3nC9jT5hW2sQ7kU4V9kP4cM7xR2dT8bS1yG6nL0hF5uQ3mJ9rC4tW8pA1eH6sD2jN7gY5:
-    "Basic To Premium",
-} as any
+function setCookie(name: string, value: string) {
+  let expires = ""
 
-function setCookie(name: string, value: string, days = 365) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString()
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`
+  // basic & pro → 30 days
+  if (value === "basic" || value === "pro") {
+    const date = new Date()
+    date.setDate(date.getDate() + 30)
+    expires = `; expires=${date.toUTCString()}`
+  }
+
+  // premium → no expiry (session-like, effectively forever)
+  document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=Lax`
 }
+
 
 export default function CheckoutPageContent() {
   const params = useSearchParams()
@@ -81,6 +77,7 @@ export default function CheckoutPageContent() {
 
     if (!order?.id) {
       alert("Failed to create payment order")
+      window.location.href = "../"
       return
     }
 
@@ -88,8 +85,8 @@ export default function CheckoutPageContent() {
       key: process.env.NEXT_PUBLIC_RZP_ID,
       amount: order.amount,
       currency: "INR",
-      name: "BuildIt Website Builder",
-      description: `${planMap[plan]} Plan Purchase (incl. tax)`,
+      name: "BuildIT Website Builder",
+      description: `${plan} Plan Purchase (incl. tax)`,
       order_id: order.id,
 
       prefill: {
@@ -97,10 +94,17 @@ export default function CheckoutPageContent() {
         email: form.email,
         contact: form.phone,
       },
-      handler: () => {
-        setCookie("buildit_unlocked", plan)
+      handler: async () => {
+        setCookie("BuildIT_unlocked", plan)
+        try {
+          await sendSuccessEmail(form.email, form.name, plan)
+        } catch (e) {
+          console.error("Email failed:", e)
+        }
+
         window.location.href = `/success?plan=${plan}`
-      },
+      }
+
     }
 
     const razorpay = new (window as any).Razorpay(options)
@@ -133,88 +137,87 @@ export default function CheckoutPageContent() {
   }
 
   // TAX
-  const taxRate = 0.05
-  const tax = Math.round(baseAmount * taxRate)
+  const taxRate = 0.08
+  const tax = baseAmount * taxRate;
   const total = baseAmount + tax
 
-  if (
-    plan ===
-    "R3vH9tP4mS1xL8uJ2cK6qG0yD5bN7gF3pT9lM1hC8wA2rV6eQ4nW0jU5sY7kX9kM2jS7aT4yC9nV5gP1bU8wR3xD6fH0pQ7lE2tJ9cN4mA8hG5rW1dY3sK6vX0"
-  )
-    plan =
-      "mP4tS9vB2qH7cL1xN6fD0wY5kR8pA3gT9uJ2eV6rC1hM7nF0dX4sW8jQ3yK5aG2bU9tL6paW7fC3gN9tM6yV1sK4pQ8lB2jT5hR0xD7uE3nF9vJ6cL1kS8mA4wP2rG5dH0qX9bU7tY3"
-  if (
-    plan ===
-    "tF6wE1pH8lM3qG9uJ5rA2vK7cD0yS4bN8mR1xL6gP3nC9jT5hW2sQ7kU4V9kP4cM7xR2dT8bS1yG6nL0hF5uQ3mJ9rC4tW8pA1eH6sD2jN7gY5"
-  )
-    plan =
-      "xC1tL6pN8rJ3yH9bS5kW2uA7fQ4gM0nV6dR1cT8mP3jE9hF5lK2wB7sD4aY0qG8vX1nB5yF2uG8hK1vQ7pD3mT9aL4sP0cW6xE2rJ8tM1kS7gH3lC9wN5qA0jV4dU6bY8"
-
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4">
-      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl p-4">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 text-center">Checkout</h1>
-        <p className="text-gray-600 text-center mb-8">Complete your purchase to unlock premium features.</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-8 pb-6 text-center border-b border-gray-100">
+          <h1 className="text-3xl font-bold text-gray-900">Secure Checkout</h1>
+          <p className="text-gray-600 mt-1">
+            Complete your purchase to unlock premium features.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
           {/* FORM */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Your Details</h2>
+          <div className="space-y-5">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Your Details
+            </h2>
 
-            <div>
-              <input
-                name="name"
-                placeholder="Full Name"
-                value={form.name}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg ${errors.name ? "border-red-500 bg-red-50" : ""}`}
-              />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-            </div>
+            {[
+              { name: "name", placeholder: "Full Name", error: errors.name },
+              { name: "email", placeholder: "Email Address", error: errors.email },
+              { name: "phone", placeholder: "Phone Number", error: errors.phone },
+            ].map((field) => (
+              <div key={field.name}>
+                <input
+                  name={field.name}
+                  placeholder={field.placeholder}
+                  value={form[field.name]}
+                  onChange={handleChange}
+                  className={`
+      w-full px-4 py-3 rounded-lg border text-sm outline-none transition
+      bg-white
+      text-gray-900
+      placeholder:text-gray-400
+      ${field.error
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    }
+    `}
+                />
+                {field.error && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {field.error}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <input
-                name="email"
-                placeholder="Email Address"
-                value={form.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg ${errors.email ? "border-red-500 bg-red-50" : ""}`}
-              />
-              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-            </div>
-
-            <div>
-              <input
-                name="phone"
-                placeholder="Phone Number"
-                value={form.phone}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 border rounded-lg ${errors.phone ? "border-red-500 bg-red-50" : ""}`}
-              />
-              {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-            </div>
+            ))}
           </div>
 
           {/* SUMMARY */}
-          <div className="bg-gray-50 rounded-xl p-6 shadow-inner space-y-4">
-            <h2 className="text-xl font-semibold">Order Summary</h2>
+          <div className="relative rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-6 border border-gray-200 space-y-5">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Order Summary
+            </h2>
 
-            <div className="flex justify-between text-gray-700">
-              <span>Plan</span>
-              <span className="capitalize">{planMap[plan]}</span>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between text-gray-700">
+                <span>Plan</span>
+                <span className="font-medium capitalize">
+                  {plan}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-gray-700">
+                <span>Base Price</span>
+                <span>₹{baseAmount}</span>
+              </div>
+
+              <div className="flex justify-between text-gray-700">
+                <span>Tax (8%)</span>
+                <span>₹{tax}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between text-gray-700">
-              <span>Base Price</span>
-              <span>₹{baseAmount}</span>
-            </div>
-
-            <div className="flex justify-between text-gray-700">
-              <span>Tax (5%)</span>
-              <span>₹{tax}</span>
-            </div>
-
-            <div className="border-t pt-3 flex justify-between font-bold text-gray-900 text-lg">
+            <div className="border-t border-gray-300 pt-4 flex justify-between text-lg font-semibold text-gray-900">
               <span>Total</span>
               <span>₹{total}</span>
             </div>
@@ -222,15 +225,29 @@ export default function CheckoutPageContent() {
             <button
               onClick={startPayment}
               disabled={loading}
-              className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+              className="mt-2 w-full py-3 rounded-lg font-semibold text-white
+              bg-gradient-to-r from-indigo-600 to-purple-600
+              hover:from-indigo-700 hover:to-purple-700
+              disabled:opacity-60 disabled:cursor-not-allowed
+              transition-all"
             >
-              {loading ? "Processing..." : `Pay ₹${total}`}
+              {loading ? "Processing Payment…" : `Pay ₹${total}`}
             </button>
+
+            <div className="text-center text-xs text-gray-500 pt-2">
+              Secured by Razorpay • SSL Encrypted
+            </div>
           </div>
         </div>
 
-        <p className="text-center text-gray-500 text-sm mt-6">Payments are securely processed via Razorpay.</p>
+        {/* Footer */}
+        <div className="px-6 pb-6 text-center">
+          <p className="text-xs text-gray-500">
+            By completing this purchase, you agree to our Terms & Privacy Policy.
+          </p>
+        </div>
       </div>
     </div>
   )
+
 }

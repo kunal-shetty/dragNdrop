@@ -19,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "BuildIt - Modern Website Builder",
+  title: "BuildIT - Modern Website Builder",
   description:
     "Build stunning websites with our modern drag-and-drop editor featuring cyberpunk aesthetics and powerful customization",
   generator: "v0.app",
@@ -36,6 +36,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+                <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+
         {children}
       </body>
     </html>

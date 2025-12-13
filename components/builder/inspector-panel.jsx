@@ -751,55 +751,29 @@ export function InspectorPanel({
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Border Radius</Label>
-                <Input
-                  value={component.props.borderRadius || "0px"}
-                  onChange={(e) => onUpdateProps({ borderRadius: e.target.value })}
-                  placeholder="8px"
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                />
-              </div>
+             <div className="space-y-2">
+  <div className="flex justify-between items-center">
+    <Label className="text-xs text-muted-foreground">Border Radius</Label>
+    <span className="text-xs text-muted-foreground">
+      {parseInt(component.props.borderRadius || "0")}px
+    </span>
+  </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Box Shadow</Label>
-                <Input
-                  value={component.props.boxShadow || ""}
-                  onChange={(e) => onUpdateProps({ boxShadow: e.target.value })}
-                  placeholder="0 4px 6px rgba(0,0,0,0.1)"
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                />
-              </div>
+  <Slider
+    value={[parseInt(component.props.borderRadius || "0")]}
+    min={0}
+    max={100}
+    step={1}
+    onValueChange={([value]) =>
+      onUpdateProps({ borderRadius: `${value}px` })
+    }
+    className="w-full"
+  />
+</div>
+
+
             </div>
 
-            {/* Save as Custom */}
-            <div className="p-3 bg-secondary/20 rounded-lg border border-border space-y-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Save className="w-3 h-3" />
-                Save as Custom Component
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="Component name"
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                />
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (customName.trim()) {
-                      onSaveAsCustom(customName)
-                      setCustomName("")
-                    }
-                  }}
-                  disabled={!customName.trim()}
-                  className="h-8 bg-neon-cyan text-background hover:bg-neon-cyan/90"
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
           </TabsContent>
 
           {/* Layout Tab */}

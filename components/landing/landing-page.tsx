@@ -316,7 +316,7 @@ export function LandingPage() {
             <Sparkles className="w-5 h-5 text-neon-cyan" />
           </div>
           <span className="text-lg font-semibold tracking-tight text-foreground">
-            Build<span className="text-neon-cyan">It</span>
+            Build<span className="text-neon-cyan">IT</span>
           </span>
         </div>
         <div className="flex items-center gap-6">
@@ -331,7 +331,7 @@ export function LandingPage() {
               className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-10 h-12 text-base font-medium"
               style={{ boxShadow: `0 0 ${30 * settings.glowIntensity}px #22d3ee40` }}
             >
-              Launch BuildIt
+              Explore
               <Sparkles className="w-4 h-4 ml-2" />
             </Button>
           </Link>
@@ -405,7 +405,7 @@ export function LandingPage() {
                 <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-chart-4/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-chart-2/60" />
-                <span className="ml-3 text-xs text-muted-foreground font-mono">BuildIt Editor</span>
+                <span className="ml-3 text-xs text-muted-foreground font-mono">BuildIT Editor</span>
               </div>
               <div className="flex h-72">
                 <div className="w-40 border-r border-border p-3 space-y-2">
@@ -519,7 +519,7 @@ export function LandingPage() {
             <h2 className="text-3xl font-semibold mb-3">
               View <span className="text-neon-purple">Gallery</span> of Possibilities
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">See what you can build with BuildIt</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">See what you can build with BuildIT</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -547,7 +547,7 @@ export function LandingPage() {
                       <div className="w-1.5 h-1.5 rounded-full bg-neon-magenta" />
                       <div className="w-1.5 h-1.5 rounded-full bg-neon-purple" />
                     </div>
-                    <p className="text-xs text-muted-foreground">Built with BuildIt</p>
+                    <p className="text-xs text-muted-foreground">Built with BuildIT</p>
                   </div>
                 </div>
               </div>
@@ -582,7 +582,7 @@ export function LandingPage() {
                 className="bg-neon-cyan text-background hover:bg-neon-cyan/90 px-10 h-14 text-lg font-medium min-w-[200px]"
                 style={{ boxShadow: `0 0 ${40 * settings.glowIntensity}px #22d3ee50` }}
               >
-                Launch BuildIt
+                Launch BuildIT
                 <Sparkles className="w-5 h-5 ml-2" />
               </Button>
             </Link>
