@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import AlternatingBuilderCTA from "./ctas"
+import { toast } from "sonner"
 
 // Particle system
 interface Particle {
@@ -307,7 +308,8 @@ export function LandingPage() {
       )}
 
       {/* Navigation */}
-      <nav className="relative z-20 flex items-center justify-between px-8 py-5 border-b border-border/30 backdrop-blur-sm">
+      <nav className="relative z-20 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-5 border-b border-border/30 backdrop-blur-sm">
+        {/* Left side */}
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 rounded-lg bg-neon-cyan/20 flex items-center justify-center"
@@ -315,15 +317,40 @@ export function LandingPage() {
           >
             <Sparkles className="w-5 h-5 text-neon-cyan" />
           </div>
-          <span className="text-lg font-semibold tracking-tight text-foreground">
+
+          <span className="text-lg font-semibold tracking-tight text-foreground whitespace-nowrap">
             Build<span className="text-neon-cyan">IT</span>
           </span>
+
+          {/* Mobile links inline */}
+          <div className="flex items-center gap-4 sm:hidden">
+            <Link
+              href="#features"
+              className="text-xs text-muted-foreground hover:text-neon-cyan transition-colors"
+            >
+              Features
+            </Link>
+            <Link
+              href="#examples"
+              className="text-xs text-muted-foreground hover:text-neon-cyan transition-colors"
+            >
+              Examples
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-6">
-          <Link href="#features" className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
+
+        {/* Desktop right side */}
+        <div className="hidden sm:flex items-center gap-6">
+          <Link
+            href="#features"
+            className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors"
+          >
             Features
           </Link>
-          <Link href="#examples" className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
+          <Link
+            href="#examples"
+            className="text-sm text-muted-foreground hover:text-neon-cyan transition-colors"
+          >
             Examples
           </Link>
           <Link href="/editor">
@@ -337,6 +364,7 @@ export function LandingPage() {
           </Link>
         </div>
       </nav>
+
 
       {/* Hero Section */}
       <section className="relative z-20 px-8 pt-20 pb-28">
@@ -379,13 +407,18 @@ export function LandingPage() {
               </Button>
             </Link>
             <Button
-              size="lg"
-              variant="outline"
-              className="border-neon-purple/40 text-neon-purple hover:text-neon-pink px-8 h-12 text-base bg-transparent"
-            >
-              <Monitor className="w-4 h-4 mr-2" />
-              Watch Demo
-            </Button>
+  size="lg"
+  variant="outline"
+  onClick={() =>
+    toast("Coming soon.....", {
+  description: "Stay tuned!",
+})
+  }
+  className="border-neon-purple/40 text-neon-purple hover:text-neon-pink px-8 h-12 text-base bg-transparent"
+>
+  <Monitor className="w-4 h-4 mr-2" />
+  Watch Demo
+</Button>
           </div>
 
           {/* Hero Preview */}
@@ -560,15 +593,15 @@ export function LandingPage() {
       <section className="relative z-20 px-8 py-24 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center">
           <Link
-  href="/editor"
-  className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 rounded-full 
+            href="/editor"
+            className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 rounded-full 
              bg-neon-cyan/10 border border-neon-cyan/30 mb-6 text-neon-cyan
              hover:bg-neon-magenta/20 hover:border-neon-magenta/30 hover:text-neon-magenta
              transition-colors"
->
-  <Sparkles className="w-4 h-4" />
-  <span className="text-sm">Ready to create?</span>
-</Link>
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm">Ready to create?</span>
+          </Link>
 
 
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -593,14 +626,16 @@ export function LandingPage() {
                 <Sparkles className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-border text-foreground hover:text-neon-magenta px-10 h-14 text-lg bg-transparent min-w-[200px]"
-            >
-              <Monitor className="w-5 h-5 mr-2" />
-              View Examples
-            </Button>
+            <Link href="#examples">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-border text-foreground hover:text-neon-magenta px-10 h-14 text-lg bg-transparent min-w-[200px]"
+              >
+                <Monitor className="w-5 h-5 mr-2" />
+                View Examples
+              </Button>
+            </Link>
           </div>
 
           <p className="mt-8 text-sm text-muted-foreground">No credit card required. Free exports included.</p>
