@@ -381,7 +381,7 @@ export function LandingPage() {
             <Button
               size="lg"
               variant="outline"
-              className="border-neon-purple/40 text-neon-purple hover:bg-neon-purple/10 px-8 h-12 text-base bg-transparent"
+              className="border-neon-purple/40 text-neon-purple hover:text-neon-pink px-8 h-12 text-base bg-transparent"
             >
               <Monitor className="w-4 h-4 mr-2" />
               Watch Demo
@@ -559,10 +559,17 @@ export function LandingPage() {
       {/* CTA Section */}
       <section className="relative z-20 px-8 py-24 border-t border-border/30">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neon-cyan/10 border border-neon-cyan/30 mb-6">
-            <Sparkles className="w-4 h-4 text-neon-cyan" />
-            <span className="text-sm text-neon-cyan">Ready to create?</span>
-          </div>
+          <Link
+  href="/editor"
+  className="inline-flex cursor-pointer items-center gap-2 px-4 py-2 rounded-full 
+             bg-neon-cyan/10 border border-neon-cyan/30 mb-6 text-neon-cyan
+             hover:bg-neon-magenta/20 hover:border-neon-magenta/30 hover:text-neon-magenta
+             transition-colors"
+>
+  <Sparkles className="w-4 h-4" />
+  <span className="text-sm">Ready to create?</span>
+</Link>
+
 
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Start Building Your{" "}
@@ -589,7 +596,7 @@ export function LandingPage() {
             <Button
               size="lg"
               variant="outline"
-              className="border-border text-foreground hover:bg-secondary/50 px-10 h-14 text-lg bg-transparent min-w-[200px]"
+              className="border-border text-foreground hover:text-neon-magenta px-10 h-14 text-lg bg-transparent min-w-[200px]"
             >
               <Monitor className="w-5 h-5 mr-2" />
               View Examples

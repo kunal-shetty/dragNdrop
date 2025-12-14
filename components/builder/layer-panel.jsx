@@ -94,12 +94,12 @@ export function LayerPanel({
       <div
         className="p-3 border-b border-sidebar-border flex items-center justify-between cursor-pointer hover:bg-secondary/30"
       >
-        
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-neon-cyan" />
-              <span className="text-sm font-medium">Layers</span>
-              <span className="text-xs text-muted-foreground">({components.length})</span>
-            </div>
+
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-neon-cyan" />
+          <span className="text-sm font-medium">Layers</span>
+          <span className="text-xs text-muted-foreground">({components.length})</span>
+        </div>
       </div>
 
       {collapsed && (
@@ -108,36 +108,32 @@ export function LayerPanel({
           {selectedId && (
             <div className="p-2 border-b border-sidebar-border flex items-center gap-1 flex-shrink-0">
               <Button
-                variant="ghost"
                 size="icon"
-                className="w-7 h-7 hover:bg-neon-cyan/10 hover:text-neon-cyan"
+                className="w-7 h-7 bg-transparent text-white hover:bg-neon-cyan/20 hover:text-neon-cyan"
                 onClick={() => onBringToFront?.(selectedId)}
                 title="Bring to front (Ctrl+Shift+])"
               >
                 <ChevronsUp className="w-3.5 h-3.5" />
               </Button>
               <Button
-                variant="ghost"
                 size="icon"
-                className="w-7 h-7 hover:bg-neon-cyan/10 hover:text-neon-cyan"
+                className="w-7 h-7 bg-transparent text-white hover:bg-neon-cyan/20 hover:text-neon-cyan"
                 onClick={() => onBringForward?.(selectedId)}
                 title="Bring forward (Ctrl+])"
               >
                 <ArrowUp className="w-3.5 h-3.5" />
               </Button>
               <Button
-                variant="ghost"
                 size="icon"
-                className="w-7 h-7 hover:bg-neon-cyan/10 hover:text-neon-cyan"
+                className="w-7 h-7 bg-transparent text-white hover:bg-neon-cyan/20 hover:text-neon-cyan"
                 onClick={() => onSendBackward?.(selectedId)}
                 title="Send backward (Ctrl+[)"
               >
                 <ArrowDown className="w-3.5 h-3.5" />
               </Button>
               <Button
-                variant="ghost"
                 size="icon"
-                className="w-7 h-7 hover:bg-neon-cyan/10 hover:text-neon-cyan"
+                className="w-7 h-7 bg-transparent text-white hover:bg-neon-cyan/20 hover:text-neon-cyan"
                 onClick={() => onSendToBack?.(selectedId)}
                 title="Send to back (Ctrl+Shift+[)"
               >
@@ -146,7 +142,6 @@ export function LayerPanel({
               <div className="flex-1" />
               {selectedIds.length > 1 && (
                 <Button
-                  variant="ghost"
                   size="icon"
                   className="w-7 h-7 hover:bg-neon-purple/10 hover:text-neon-purple"
                   onClick={() => onGroup?.(selectedIds)}

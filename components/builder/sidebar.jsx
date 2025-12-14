@@ -72,7 +72,7 @@ export function Sidebar({
   if (collapsed) {
     return (
       <div
-        className="w-12 h-full bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 cursor-pointer hover:bg-secondary/30 transition-colors flex-shrink-0"
+        className="w-12 h-full bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 cursor-pointer transition-colors flex-shrink-0"
         onClick={onExpand}
       >
         <ChevronRight className="w-4 h-4 text-neon-cyan mb-4" />
@@ -120,37 +120,33 @@ export function Sidebar({
       <div className="p-3 border-b border-sidebar-border">
         <div className="flex gap-1 flex-wrap">
           <Button
-            variant="ghost"
             size="sm"
             onClick={onToggleSnapping}
-            className={`flex-1 h-8 ${snappingEnabled ? "text-neon-cyan bg-neon-cyan/10" : ""}`}
+            className={`flex-1 h-8 bg-transparent text-white hover:bg-neon-magenta ${snappingEnabled ? "text-neon-cyan bg-neon-cyan/10 hover:text-white" : ""}`}
             title={snappingEnabled ? "Disable snapping" : "Enable snapping"}
           >
             {snappingEnabled ? <Magnet className="w-4 h-4" /> : <MagnetOff className="w-4 h-4" />}
           </Button>
           <Button
-            variant="ghost"
             size="sm"
             onClick={onToggleLayerPanel}
-            className={`flex-1 h-8 ${showLayerPanel ? "text-neon-cyan bg-neon-cyan/10" : ""}`}
+            className={`flex-1 h-8 bg-transparent text-white hover:bg-neon-magenta ${showLayerPanel ? "text-neon-cyan bg-neon-cyan/10 hover:text-white" : ""}`}
             title="Toggle layer panel"
           >
             <PanelLeft className="w-4 h-4" />
           </Button>
           <Button
-            variant="ghost"
             size="sm"
             onClick={onToggleHistoryPanel}
-            className={`flex-1 h-8 ${showHistoryPanel ? "text-neon-cyan bg-neon-cyan/10" : ""}`}
+            className={`flex-1 h-8 bg-transparent text-white hover:bg-neon-magenta ${showHistoryPanel ? "text-neon-cyan bg-neon-cyan/10 hover:text-white" : ""}`}
             title="Toggle history panel"
           >
             <History className="w-4 h-4" />
           </Button>
           <Button
-            variant="ghost"
             size="sm"
             onClick={onTogglePhysics}
-            className={`flex-1 h-8 ${physicsEnabled ? "text-neon-magenta bg-neon-magenta/10" : ""}`}
+            className={`flex-1 h-8 bg-transparent text-white hover:bg-neon-magenta ${physicsEnabled ? "text-neon-cyan bg-neon-cyan/10 hover:text-white" : ""}`}
             title={physicsEnabled ? "Disable physics" : "Enable physics (experimental)"}
           >
             <Zap className="w-4 h-4" />

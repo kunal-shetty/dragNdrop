@@ -271,7 +271,7 @@ export function Canvas({
             ))}
 
             {components.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+              <div className="absolute inset-0 top-50 flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <p className="text-lg font-medium text-neon-cyan neon-text-cyan">Drop components here</p>
                   <p className="text-sm mt-1 text-muted-foreground">Drag from the sidebar to start building</p>
