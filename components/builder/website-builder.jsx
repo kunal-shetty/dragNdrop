@@ -20,6 +20,7 @@ import { AIChatbot } from "./ai-chatbot"
 import { OnboardingTour } from "./onboarding-tour"
 import { Button } from "@/components/ui/button"
 import { trackUsage, getUsageCount, limit } from "@/lib/usage-tracking"
+import { ExportProgress } from "./export-progress"
 
 export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
   const [docId] = useState(() => documentId || generateId())
@@ -206,11 +207,15 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
     [addComponent, addCustomComponent, customComponents, zoom],
   )
 
+  const [showExportProgress, setShowExportProgress] = useState(false)
+  const [pendingHTML, setPendingHTML] = useState(null)
+
   const handleExport = useCallback(() => {
     // Unlimited plans
     if (exportLimit === null) {
       const html = exportToHTML(components)
-      downloadHTML(html)
+      setPendingHTML(html)
+      setShowExportProgress(true)
       return
     }
 
@@ -221,12 +226,19 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
       return
     }
 
-    // Update UI count
     setUsageCount(getUsageCount())
 
     const html = exportToHTML(components)
-    downloadHTML(html)
+    setPendingHTML(html)
+    setShowExportProgress(true)
   }, [components, exportLimit])
+
+  useEffect(() => {
+    if (!showExportProgress && pendingHTML) {
+      downloadHTML(pendingHTML)
+      setPendingHTML(null)
+    }
+  }, [showExportProgress, pendingHTML])
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -409,7 +421,13 @@ export function WebsiteBuilder({ documentId, collaborationEnabled = false }) {
               responsiveMode={responsiveMode}
               onResponsiveModeChange={setResponsiveMode}
             />
+
           )}
+          <ExportProgress
+            open={showExportProgress}
+            onDone={() => setShowExportProgress(false)}
+          />
+
 
           {!previewMode && showLayerPanel && (
             <LayerPanel

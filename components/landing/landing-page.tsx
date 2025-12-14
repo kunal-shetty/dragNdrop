@@ -407,18 +407,18 @@ export function LandingPage() {
               </Button>
             </Link>
             <Button
-  size="lg"
-  variant="outline"
-  onClick={() =>
-    toast("Coming soon.....", {
-  description: "Stay tuned!",
-})
-  }
-  className="border-neon-purple/40 text-neon-purple hover:text-neon-pink px-8 h-12 text-base bg-transparent"
->
-  <Monitor className="w-4 h-4 mr-2" />
-  Watch Demo
-</Button>
+              size="lg"
+              variant="outline"
+              onClick={() =>
+                toast("Coming soon.....", {
+                  description: "Stay tuned!",
+                })
+              }
+              className="border-neon-purple/40 text-neon-purple hover:text-neon-pink px-8 h-12 text-base bg-transparent"
+            >
+              <Monitor className="w-4 h-4 mr-2" />
+              Watch Demo
+            </Button>
           </div>
 
           {/* Hero Preview */}
