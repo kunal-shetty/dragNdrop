@@ -14,7 +14,6 @@ import {
   FlipHorizontal,
   FlipVertical,
   Code,
-  Save,
   ChevronLeft,
   ChevronRight,
   Zap,
@@ -680,11 +679,13 @@ export function InspectorPanel({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Font Size</Label>
+                  <Label className="text-xs text-muted-foreground">Font Size (px)</Label>
                   <Input
-                    value={component.props.fontSize || "16px"}
-                    onChange={(e) => onUpdateProps({ fontSize: e.target.value })}
-                    placeholder="16px"
+                    type="number"
+                    min={8}
+                    max={200}
+                    value={Number.parseInt(component.props.fontSize) || 16}
+                    onChange={(e) => onUpdateProps({ fontSize: Number.parseInt(e.target.value) || 16 })}
                     className="h-8 text-sm bg-secondary/50 border-border"
                   />
                 </div>
@@ -725,6 +726,33 @@ export function InspectorPanel({
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Letter Spacing (px)</Label>
+                  <Input
+                    type="number"
+                    min={-5}
+                    max={20}
+                    step={0.5}
+                    value={Number.parseFloat(component.props.letterSpacing) || 0}
+                    onChange={(e) => onUpdateProps({ letterSpacing: Number.parseFloat(e.target.value) || 0 })}
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Line Height</Label>
+                  <Input
+                    type="number"
+                    min={0.5}
+                    max={3}
+                    step={0.1}
+                    value={Number.parseFloat(component.props.lineHeight) || 1.5}
+                    onChange={(e) => onUpdateProps({ lineHeight: Number.parseFloat(e.target.value) || 1.5 })}
+                    className="h-8 text-sm bg-secondary/50 border-border"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Effects */}
@@ -751,29 +779,61 @@ export function InspectorPanel({
                 />
               </div>
 
-             <div className="space-y-2">
-  <div className="flex justify-between items-center">
-    <Label className="text-xs text-muted-foreground">Border Radius</Label>
-    <span className="text-xs text-muted-foreground">
-      {parseInt(component.props.borderRadius || "0")}px
-    </span>
-  </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs text-muted-foreground">Border Radius</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {Number.parseInt(component.props.borderRadius || "0")}px
+                  </span>
+                </div>
 
-  <Slider
-    value={[parseInt(component.props.borderRadius || "0")]}
-    min={0}
-    max={100}
-    step={1}
-    onValueChange={([value]) =>
-      onUpdateProps({ borderRadius: `${value}px` })
-    }
-    className="w-full"
-  />
-</div>
+                <Slider
+                  value={[Number.parseInt(component.props.borderRadius || "0")]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={([value]) => onUpdateProps({ borderRadius: `${value}px` })}
+                  className="w-full"
+                />
+              </div>
 
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs text-muted-foreground">Shadow Intensity</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {Math.round((component.props.shadowIntensity || 0) * 100)}%
+                  </span>
+                </div>
+                <Slider
+                  value={[(component.props.shadowIntensity || 0) * 100]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={([value]) => {
+                    const intensity = value / 100
+                    const shadow =
+                      intensity > 0 ? `0 ${4 * intensity}px ${16 * intensity}px rgba(0,0,0,${0.5 * intensity})` : "none"
+                    onUpdateProps({ shadowIntensity: intensity, boxShadow: shadow })
+                  }}
+                  className="w-full"
+                />
+              </div>
 
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-xs text-muted-foreground">Backdrop Blur</Label>
+                  <span className="text-xs text-muted-foreground">{component.props.backdropBlur || 0}px</span>
+                </div>
+                <Slider
+                  value={[component.props.backdropBlur || 0]}
+                  min={0}
+                  max={50}
+                  step={1}
+                  onValueChange={([value]) => onUpdateProps({ backdropBlur: value })}
+                  className="w-full"
+                />
+              </div>
             </div>
-
           </TabsContent>
 
           {/* Layout Tab */}
@@ -853,38 +913,110 @@ export function InspectorPanel({
             <div className="space-y-3 p-3 bg-secondary/20 rounded-lg border border-border">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Layout className="w-3 h-3" />
-                Padding
+                Padding & Margin
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Horizontal</Label>
+                  <Label className="text-[10px] text-muted-foreground">Top</Label>
                   <Input
-                    value={component.props.paddingX || "16px"}
-                    onChange={(e) => onUpdateProps({ paddingX: e.target.value })}
-                    placeholder="16px"
-                    className="h-8 text-sm bg-secondary/50 border-border"
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={Number.parseInt(component.props.paddingTop) || Number.parseInt(component.props.padding) || 0}
+                    onChange={(e) => onUpdateProps({ paddingTop: Number.parseInt(e.target.value) || 0 })}
+                    className="h-7 text-xs bg-secondary/50 border-border"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Vertical</Label>
+                  <Label className="text-[10px] text-muted-foreground">Right</Label>
                   <Input
-                    value={component.props.paddingY || "8px"}
-                    onChange={(e) => onUpdateProps({ paddingY: e.target.value })}
-                    placeholder="8px"
-                    className="h-8 text-sm bg-secondary/50 border-border"
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={
+                      Number.parseInt(component.props.paddingRight) || Number.parseInt(component.props.padding) || 0
+                    }
+                    onChange={(e) => onUpdateProps({ paddingRight: Number.parseInt(e.target.value) || 0 })}
+                    className="h-7 text-xs bg-secondary/50 border-border"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground">Bottom</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={
+                      Number.parseInt(component.props.paddingBottom) || Number.parseInt(component.props.padding) || 0
+                    }
+                    onChange={(e) => onUpdateProps({ paddingBottom: Number.parseInt(e.target.value) || 0 })}
+                    className="h-7 text-xs bg-secondary/50 border-border"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground">Left</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={200}
+                    value={
+                      Number.parseInt(component.props.paddingLeft) || Number.parseInt(component.props.padding) || 0
+                    }
+                    onChange={(e) => onUpdateProps({ paddingLeft: Number.parseInt(e.target.value) || 0 })}
+                    className="h-7 text-xs bg-secondary/50 border-border"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">All Sides</Label>
-                <Input
-                  value={component.props.padding || ""}
-                  onChange={(e) => onUpdateProps({ padding: e.target.value })}
-                  placeholder="16px or 8px 16px"
-                  className="h-8 text-sm bg-secondary/50 border-border"
-                />
+              <div className="pt-2 border-t border-border">
+                <Label className="text-xs text-muted-foreground mb-2 block">Margin</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Top</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={Number.parseInt(component.props.marginTop) || 0}
+                      onChange={(e) => onUpdateProps({ marginTop: Number.parseInt(e.target.value) || 0 })}
+                      className="h-7 text-xs bg-secondary/50 border-border"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Right</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={Number.parseInt(component.props.marginRight) || 0}
+                      onChange={(e) => onUpdateProps({ marginRight: Number.parseInt(e.target.value) || 0 })}
+                      className="h-7 text-xs bg-secondary/50 border-border"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Bottom</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={Number.parseInt(component.props.marginBottom) || 0}
+                      onChange={(e) => onUpdateProps({ marginBottom: Number.parseInt(e.target.value) || 0 })}
+                      className="h-7 text-xs bg-secondary/50 border-border"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Left</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={200}
+                      value={Number.parseInt(component.props.marginLeft) || 0}
+                      onChange={(e) => onUpdateProps({ marginLeft: Number.parseInt(e.target.value) || 0 })}
+                      className="h-7 text-xs bg-secondary/50 border-border"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

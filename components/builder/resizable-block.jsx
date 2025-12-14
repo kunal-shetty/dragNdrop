@@ -353,17 +353,51 @@ export function ResizableBlock({
       ? { boxShadow: `0 0 ${20 * props.glowIntensity}px ${props.borderColor || "#22d3ee"}40` }
       : {}
 
+    const borderStyle = {
+      borderRadius: props.borderRadius || "0px",
+      borderWidth: props.borderWidth ? `${props.borderWidth}px` : undefined,
+      borderColor: props.borderColor || "#333",
+      borderStyle: props.borderWidth ? "solid" : undefined,
+      boxShadow: props.boxShadow || (props.shadow ? "0 4px 6px -1px rgb(0 0 0 / 0.3)" : undefined),
+      opacity: props.opacity !== undefined ? props.opacity : 1,
+      backdropFilter: props.backdropBlur ? `blur(${props.backdropBlur}px)` : undefined,
+    }
+
+    const getPaddingStyle = () => {
+      if (props.paddingTop || props.paddingRight || props.paddingBottom || props.paddingLeft) {
+        return {
+          paddingTop: props.paddingTop ? `${props.paddingTop}px` : undefined,
+          paddingRight: props.paddingRight ? `${props.paddingRight}px` : undefined,
+          paddingBottom: props.paddingBottom ? `${props.paddingBottom}px` : undefined,
+          paddingLeft: props.paddingLeft ? `${props.paddingLeft}px` : undefined,
+        }
+      }
+      return { padding: props.padding }
+    }
+
+    const getMarginStyle = () => {
+      if (props.marginTop || props.marginRight || props.marginBottom || props.marginLeft) {
+        return {
+          marginTop: props.marginTop ? `${props.marginTop}px` : undefined,
+          marginRight: props.marginRight ? `${props.marginRight}px` : undefined,
+          marginBottom: props.marginBottom ? `${props.marginBottom}px` : undefined,
+          marginLeft: props.marginLeft ? `${props.marginLeft}px` : undefined,
+        }
+      }
+      return {}
+    }
+
     switch (component.type) {
       case "text":
         return isEditing ? (
           <textarea
             className="w-full h-full resize-none border-none outline-none bg-transparent"
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               fontWeight: props.fontWeight,
               color: props.color,
-              padding: props.padding,
-              letterSpacing: props.letterSpacing,
+              ...getPaddingStyle(),
+              letterSpacing: typeof props.letterSpacing === "number" ? `${props.letterSpacing}px` : props.letterSpacing,
               lineHeight: props.lineHeight,
               textAlign: props.textAlign,
             }}
@@ -375,16 +409,18 @@ export function ResizableBlock({
         ) : (
           <div
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               fontWeight: props.fontWeight,
               color: props.color,
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              letterSpacing: props.letterSpacing,
+              letterSpacing: typeof props.letterSpacing === "number" ? `${props.letterSpacing}px` : props.letterSpacing,
               lineHeight: props.lineHeight,
               textAlign: props.textAlign,
               width: "100%",
               height: "100%",
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {props.content}
@@ -396,10 +432,10 @@ export function ResizableBlock({
           <input
             className="w-full h-full border-none outline-none bg-transparent"
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               fontWeight: props.fontWeight,
               color: props.color,
-              padding: props.padding,
+              ...getPaddingStyle(),
             }}
             defaultValue={props.content}
             onChange={(e) => onContentChange(component.id, { content: e.target.value })}
@@ -409,15 +445,20 @@ export function ResizableBlock({
         ) : (
           <div
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               fontWeight: props.fontWeight,
               color: props.color,
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
               width: "100%",
               height: "100%",
               display: "flex",
               alignItems: "center",
+              letterSpacing: typeof props.letterSpacing === "number" ? `${props.letterSpacing}px` : props.letterSpacing,
+              lineHeight: props.lineHeight,
+              textAlign: props.textAlign,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {props.content}
@@ -429,9 +470,9 @@ export function ResizableBlock({
           <textarea
             className="w-full h-full resize-none border-none outline-none bg-transparent"
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               color: props.color,
-              padding: props.padding,
+              ...getPaddingStyle(),
               lineHeight: props.lineHeight,
             }}
             defaultValue={props.content}
@@ -442,14 +483,18 @@ export function ResizableBlock({
         ) : (
           <div
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               color: props.color,
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
               lineHeight: props.lineHeight,
               width: "100%",
               height: "100%",
               overflow: "auto",
+              letterSpacing: typeof props.letterSpacing === "number" ? `${props.letterSpacing}px` : props.letterSpacing,
+              textAlign: props.textAlign,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {props.content}
@@ -457,26 +502,17 @@ export function ResizableBlock({
         )
 
       case "button":
-        return isEditing ? (
-          <input
-            className="border-none outline-none bg-transparent text-center w-full"
-            style={{ fontSize: props.fontSize, color: props.color }}
-            defaultValue={props.content}
-            onChange={(e) => onContentChange(component.id, { content: e.target.value })}
-            onBlur={handleBlur}
-            autoFocus
-          />
-        ) : (
+        return (
           <button
             className="w-full h-full flex items-center justify-center transition-all duration-300 hover:scale-105"
             style={{
-              fontSize: props.fontSize,
+              fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize,
               fontWeight: props.fontWeight === "medium" ? 500 : props.fontWeight,
               color: props.color,
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
-              borderRadius: props.borderRadius,
-              border: `${props.borderWidth || 1}px solid ${props.borderColor || props.backgroundColor}`,
+              ...getPaddingStyle(),
+              ...borderStyle,
+              ...getMarginStyle(),
               ...glowStyle,
             }}
           >
@@ -492,9 +528,8 @@ export function ResizableBlock({
             className="w-full h-full"
             style={{
               objectFit: props.objectFit,
-              borderRadius: props.borderRadius,
-              opacity: props.opacity,
-              border: props.borderWidth ? `${props.borderWidth}px solid ${props.borderColor}` : "none",
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           />
         )
@@ -516,11 +551,10 @@ export function ResizableBlock({
           <div
             className="w-full h-full flex flex-col"
             style={{
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
-              boxShadow: props.shadow ? "0 4px 6px -1px rgb(0 0 0 / 0.3)" : "none",
+              ...borderStyle,
+              ...getMarginStyle(),
               ...glowStyle,
             }}
           >
@@ -554,8 +588,8 @@ export function ResizableBlock({
             className="w-full h-full flex flex-col overflow-hidden"
             style={{
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             <div className="h-32 overflow-hidden">
@@ -575,14 +609,16 @@ export function ResizableBlock({
       case "container":
         return (
           <div
-            className="w-full h-full flex items-center justify-center text-muted-foreground text-sm"
+            className="w-full h-full"
             style={{
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              border: `${props.borderWidth || 1}px solid ${props.borderColor || "transparent"}`,
-              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : "none",
+              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : undefined,
               backgroundSize: "cover",
+              backgroundPosition: "center",
+              minHeight: props.minHeight,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {!props.backgroundImage && "Container"}
@@ -591,13 +627,19 @@ export function ResizableBlock({
 
       case "divider":
         return (
-          <div className="w-full h-full flex items-center justify-center">
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              ...getMarginStyle(),
+            }}
+          >
             <div
               style={{
-                width: `${props.width}%`,
-                height: props.thickness,
+                width: `${props.width || 100}%`,
+                height: `${props.thickness || 1}px`,
                 backgroundColor: props.color,
-                boxShadow: props.glowIntensity ? `0 0 ${10 * props.glowIntensity}px ${props.color}` : "none",
+                borderStyle: props.style || "solid",
+                filter: props.glowIntensity ? `drop-shadow(0 0 ${5 * props.glowIntensity}px ${props.color})` : "none",
               }}
             />
           </div>
@@ -606,12 +648,13 @@ export function ResizableBlock({
       case "quote":
         return (
           <div
-            className="w-full h-full"
+            className="w-full h-full flex flex-col justify-center"
             style={{
-              padding: props.padding,
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              borderLeft: `4px solid ${props.accentColor}`,
+              ...borderStyle,
+              ...getMarginStyle(),
+              borderLeft: `4px solid ${props.accentColor || "#22d3ee"}`,
             }}
           >
             <p className="italic mb-2" style={{ fontSize: props.fontSize, color: props.color }}>
@@ -628,7 +671,12 @@ export function ResizableBlock({
         return (
           <div
             className="w-full h-full flex items-center justify-center"
-            style={{ padding: props.padding, backgroundColor: props.backgroundColor }}
+            style={{
+              ...getPaddingStyle(),
+              backgroundColor: props.backgroundColor,
+              ...borderStyle,
+              ...getMarginStyle(),
+            }}
           >
             <IconComponent
               style={{
@@ -646,10 +694,10 @@ export function ResizableBlock({
           <div
             className="w-full h-full flex flex-col"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              border: `1px solid ${props.borderColor}`,
-              padding: 24,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {props.featured && (
@@ -688,9 +736,10 @@ export function ResizableBlock({
           <div
             className="w-full h-full"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              borderRadius: props.borderRadius,
-              padding: props.padding,
+              ...borderStyle,
+              ...getMarginStyle(),
               borderTop: `1px solid ${props.borderColor}`,
             }}
           >
@@ -714,13 +763,14 @@ export function ResizableBlock({
 
       case "navbar":
         return (
-          <nav
+          <div
             className="w-full h-full flex items-center justify-between"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
+              ...borderStyle,
+              ...getMarginStyle(),
               borderBottom: `1px solid ${props.borderColor}`,
-              borderRadius: props.borderRadius,
             }}
           >
             <div className="flex items-center gap-2">
@@ -742,24 +792,26 @@ export function ResizableBlock({
             >
               {props.ctaText}
             </button>
-          </nav>
+          </div>
         )
 
       case "section":
         return (
-          <section
-            className="w-full h-full flex items-center justify-center"
+          <div
+            className="w-full h-full"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
-              minHeight: props.minHeight,
-              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : "none",
+              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : undefined,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              minHeight: props.minHeight,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             <span className="text-muted-foreground text-sm">Section - Drop components here</span>
-          </section>
+          </div>
         )
 
       case "hero":
@@ -767,14 +819,13 @@ export function ResizableBlock({
           <div
             className="w-full h-full flex flex-col items-center justify-center text-center"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
-              backgroundImage: props.backgroundImage
-                ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${props.backgroundImage})`
-                : "none",
+              backgroundImage: props.backgroundImage ? `url(${props.backgroundImage})` : undefined,
               backgroundSize: "cover",
               backgroundPosition: "center",
-              borderRadius: props.borderRadius,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             <h1 className="text-4xl font-bold mb-4" style={{ color: props.headingColor }}>
@@ -795,12 +846,12 @@ export function ResizableBlock({
       case "testimonial":
         return (
           <div
-            className="w-full h-full flex flex-col"
+            className="w-full h-full flex flex-col justify-center"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
-              borderRadius: props.borderRadius,
-              border: `1px solid ${props.borderColor}`,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             <p className="italic flex-1" style={{ fontSize: props.fontSize, color: props.quoteColor }}>
@@ -829,12 +880,12 @@ export function ResizableBlock({
       case "stats":
         return (
           <div
-            className="w-full h-full grid gap-4"
+            className="w-full h-full"
             style={{
+              ...getPaddingStyle(),
               backgroundColor: props.backgroundColor,
-              padding: props.padding,
-              borderRadius: props.borderRadius,
-              gridTemplateColumns: `repeat(${props.columns || 3}, 1fr)`,
+              ...borderStyle,
+              ...getMarginStyle(),
             }}
           >
             {(props.stats || []).map((stat, i) => (
@@ -879,11 +930,7 @@ export function ResizableBlock({
         )
 
       default:
-        return (
-          <div className="w-full h-full bg-secondary rounded flex items-center justify-center text-xs text-muted-foreground">
-            {component.type}
-          </div>
-        )
+        return <div>Unknown component type</div>
     }
   }
 
